@@ -183,8 +183,8 @@ class AccessControlEntity:
 
 
 def nonblank_lines(f):
-    for l in f:
-        line = l.rstrip()
+    for line in f:
+        line = line.rstrip()
         if line:
             yield line
 

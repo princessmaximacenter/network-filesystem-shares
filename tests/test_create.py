@@ -29,7 +29,7 @@ class TestCreate(TestBase):
         source = self.fabricate([
             "file"
         ])
-        items = [j(source, 'file'),j(source, 'file')]
+        items = [j(source, 'file'), j(source, 'file')]
         share = create(j(self.working_dir, 'share'), items=items, managing_groups=[self.calling_prim_group],
                        domain="op.umcutrecht.nl")
         self.assertTrue(os.path.samefile(
@@ -44,10 +44,10 @@ class TestCreate(TestBase):
         items = [j(source, 'file1'), j(source, 'file2')]
         try:
             subprocess.check_output(['nfs4_share',
-                                    '-vv', 'create', 
-                                    j(self.working_dir, 'share'), 
-                                    '--item', items[0], items[1], 
-                                    '-mu', self.calling_user],
+                                     '-vv', 'create',
+                                     j(self.working_dir, 'share'),
+                                     '--item', items[0], items[1],
+                                     '-mu', self.calling_user],
                                     stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             print(e.cmd)
@@ -226,9 +226,10 @@ class TestCreate(TestBase):
 
     def test_cli_with_missing_file(self):
         proc = subprocess.run(
-                ['python3', '-m', 'nfs4_share', 'create', j(self.working_dir, 'share_with_not_existing_file'), '--item', "not_existing_file.txt", '-mu',
-                 self.calling_user],
-                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            ['python3', '-m', 'nfs4_share', 'create', j(self.working_dir, 'share_with_not_existing_file'), '--item',
+             "not_existing_file.txt", '-mu',
+             self.calling_user],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         with self.assertRaises(subprocess.CalledProcessError):
             proc.check_returncode()
         self.assertTrue(not os.path.exists(j(self.working_dir, 'share_with_not_existing_file')))

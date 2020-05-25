@@ -17,15 +17,20 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
             For more information on input variables run ./share remove --help
     """
     # Ugly, but best practice to default to empty lists as follows:
-    if items is None: items = []
-    if users is None: users = []
-    if groups is None: groups = []
+    if items is None:
+        items = []
+    if users is None:
+        users = []
+    if groups is None:
+        groups = []
     if managing_users is None and managing_groups is None:
         msg = "A share needs to have either a managing user or group!"
         logging.error(msg)
         raise RuntimeError(msg)
-    if managing_users is None: managing_users = []
-    if managing_groups is None: managing_groups = []
+    if managing_users is None:
+        managing_users = []
+    if managing_groups is None:
+        managing_groups = []
 
     ensure_users_exist(users + managing_users)
     ensure_groups_exist(groups + managing_groups)

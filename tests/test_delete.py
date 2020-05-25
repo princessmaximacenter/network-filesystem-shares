@@ -57,7 +57,7 @@ class TestRemove(TestBase):
             j(share.directory, "file")))
         try:
             subprocess.check_call(['nfs4_share', 'delete', j(self.working_dir, 'share')],
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
             print(e.cmd)
             if e.stdout is not None:
@@ -75,8 +75,9 @@ class TestRemove(TestBase):
         ])
         items = [j(source, 'file')]
 
-        share1 = create(j(self.working_dir, 'share1'), items=items, users=[self.calling_user], managing_groups=[self.calling_prim_group],
-                       domain="op.umcutrecht.nl", lock=False)
+        share1 = create(j(self.working_dir, 'share1'), items=items, users=[self.calling_user],
+                        managing_groups=[self.calling_prim_group],
+                        domain="op.umcutrecht.nl", lock=False)
         share1_nfs4_acl = nfs4_acl.AccessControlList.from_file(items[0])
         share2 = create(j(self.working_dir, 'share2'), items=items, users=[self.calling_user],
                         managing_groups=[self.calling_prim_group],

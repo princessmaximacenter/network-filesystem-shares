@@ -5,6 +5,7 @@ import logging
 import sys
 from . import manage
 
+
 def _cli_argument_parser():
     """
     Parses the command-line interface arguments and does basic checks on validity.
