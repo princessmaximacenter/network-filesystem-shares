@@ -73,7 +73,7 @@ class Share:
         within_share_dir_path = os.path.join(self.directory, os.path.basename(source_root))
         self._makedir(within_share_dir_path)
         for root, subdirectories, files in os.walk(source_root, followlinks=True):
-            share_root = root.replace(source_root, within_share_dir_path, 1)
+            share_root = root.replace(str(source_root), within_share_dir_path, 1)
             for subdir in subdirectories:
                 target = os.path.join(share_root, subdir)
                 self._makedir(target)

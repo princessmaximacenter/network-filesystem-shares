@@ -61,7 +61,7 @@ def _cli_argument_parser():
                                     "Default: 'Require ldap-group cn={},ou=groups,dc=genomics,dc=op,dc=umcutrecht,dc=nl' where {} is replaced by the group")
 
     # Sub-parser for removing a share
-    delete_parser = subparsers.add_parser('delete', aliases=['rm,remove,del'], help='deletes a share directory (help: \'remove -h\')')
+    delete_parser = subparsers.add_parser('delete', aliases=['rm', 'remove', 'del'], help='deletes a share directory (help: \'delete -h\')')
     delete_parser.set_defaults(func=manage.delete)
     for args in ['share_directory']:
         delete_parser.add_argument(*default_args[args][0], **default_args[args][1])
@@ -107,7 +107,7 @@ def main(parser):
     # Unpack the dictionary to the selected function (e.g. 'create', 'remove' (excluding the 'func' key)
     share = args.func(**{x: args_dict[x] for x in args_dict if x not in ['func', 'verbosity']})
 
-    if args.func.__name__ != 'remove':
+    if args.func.__name__ != 'delete':
         logging.info("Filesystem path to share is: %s" % share.directory)
         data_dir = '/data/isi/p/pmc_research/omics'
         fqdn_url = 'https://files.bioinf.prinsesmaximacentrum.nl'
