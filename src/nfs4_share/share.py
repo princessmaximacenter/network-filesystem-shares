@@ -141,14 +141,16 @@ class Share:
         """
         self._unshare_linked_tree(directory=self.directory, force_file_removal=force_file_removal)
 
-    def _unshare_dir(self, target):
+    @staticmethod
+    def _unshare_dir(target):
         """
         Removes a directory from this share, fails when directory is not empty
         """
         logging.debug("Un-sharing directory %s" % target)
         os.rmdir(target)
 
-    def _unshare_file(self, target, force=False):
+    @staticmethod
+    def _unshare_file(target, force=False):
         """
         Removes a file from this share
         """
@@ -157,9 +159,6 @@ class Share:
             msg = "File %s has ONE hard link. Un-sharing this file will delete it! Apply \'--force\' to do so." % target
             logging.error(msg)
             raise FileNotFoundError(msg)
-        new_permissions = AccessControlList.from_file(target) - self.permissions
-        logging.debug("File %s new permissions: %s" % (target, new_permissions))
-        new_permissions.set(target)
         os.unlink(target)
 
 
