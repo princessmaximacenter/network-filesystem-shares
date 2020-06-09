@@ -180,10 +180,8 @@ def test_permissions_create_with_file(source_dir, shares_dir, calling_user, call
     assert os.path.samefile(j(share.directory, "file"), items[0])
 
     expected_acl = acl.AccessControlList([user_permissions, extra_permissions, managing_group_permissions])
-    file_acl = acl.AccessControlList.from_file(j(share.directory, "file"))
     share_acl = acl.AccessControlList.from_file(share.directory)
     assert expected_acl == share_acl
-    assert user_permissions in file_acl
 
 
 def test_htaccess_create_with_file(source_dir, shares_dir, calling_user, calling_prim_group):

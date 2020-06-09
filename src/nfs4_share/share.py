@@ -127,18 +127,13 @@ class Share:
         Creates a hard link between two files and outputs to log
         """
         try:
-            self._unlock(source)    # prevents locking from messing up the setting of permissions
             logging.debug("Linking %s and %s" % (source, target))
             os.link(os.path.realpath(source), target)
-            self.permissions.append(target=target)
         except PermissionError as e:
             msg = "ERROR: Insufficient rights on {}! Possible cause; source file need to be writable/appendable when fs.protect_hardlinks is enabled. Permissions: {}"
             logging.error(msg.format(e.filename, str(AccessControlList.from_file(target))))
         except FileExistsError as e:
-            logging.debug("File %s already exists! Going to remove and re-add it!" % e.filename)
-            # It is already there, either by having been added before or within an update
-            self._unshare_file(target)
-            self._link_files(source, target)
+            logging.debug("File %s already exists!" % e.filename)
 
     def self_destruct(self, force_file_removal=False):
         """
