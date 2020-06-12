@@ -23,7 +23,7 @@ nfs4_mount_dir="$3"
 this_script_path="$( cd "$(dirname "$0")" ; pwd -P )"
 nfs4_share_dir=$(realpath "${this_script_path}/..")
 
-rsync -vr --filter=':- .gitignore' "${nfs4_share_dir}/" "${target_host}:${target_dir}"
+rsync -vr --filter=':- .gitignore' --exclude=.git "${nfs4_share_dir}/" "${target_host}:${target_dir}"
 
 
 ssh ${target_host} "
