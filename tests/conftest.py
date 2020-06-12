@@ -21,4 +21,9 @@ def source_dir(tmpdir_factory):
 
 @pytest.fixture(scope="function")
 def shares_dir(tmpdir_factory):
-    return tmpdir_factory.mktemp("shares")
+    tmpdir = tmpdir_factory.mktemp("shares")
+    yield tmpdir
+    from nfs4_share.manage import unlock
+
+    for share in os.listdir(tmpdir):
+        unlock(tmpdir.join(share))

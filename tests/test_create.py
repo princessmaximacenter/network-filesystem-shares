@@ -164,8 +164,10 @@ def test_permissions_create_with_file(source_dir, shares_dir, calling_user, call
     items = fabricate_a_source(source_dir, [
         "file"
     ])
+    before_file_permissions = acl.AccessControlList.from_file(items[0])
     users = [calling_user]
     managing_groups = [calling_prim_group]
+    pass
     share = create(shares_dir.join('share'), items=items, users=users, managing_groups=managing_groups,
                    domain="op.umcutrecht.nl", lock=False)
     user_permissions = acl.AccessControlEntity('A', '', calling_user, 'op.umcutrecht.nl', 'rxtncy')
@@ -174,9 +176,10 @@ def test_permissions_create_with_file(source_dir, shares_dir, calling_user, call
                                                          'g',
                                                          calling_prim_group,
                                                          'op.umcutrecht.nl',
-                                                         'rxwadtTNcCo')
+                                                         'rxwaDdtTNcCo')
     assert user_permissions in share.permissions
     assert extra_permissions in share.permissions
+    assert before_file_permissions == acl.AccessControlList.from_file(items[0])
     assert os.path.samefile(j(share.directory, "file"), items[0])
 
     expected_acl = acl.AccessControlList([user_permissions, extra_permissions, managing_group_permissions])

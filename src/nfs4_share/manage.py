@@ -62,14 +62,22 @@ def delete(share_directory, force=False):
         Deletes a share. The directory representing the share should exist.
                  For more information on input variables run nfs4_share delete --help
     """
+    share = unlock(share_directory)
+    htaccess.remove_from(share, absent_ok=True)
+    share.self_destruct(force_file_removal=force)
+    logging.info("Removed share at %s" % share.directory)
+
+
+def unlock(share_directory):
+    """
+        Unlocks a share. The directory representing the share should exist.
+    """
     if not os.path.exists(share_directory):
         logging.error("\'%s\' is expected to exist!" % share_directory)
         raise FileNotFoundError(share_directory)
     share = Share(share_directory, exist_ok=True)
     share.unlock()
-    htaccess.remove_from(share, absent_ok=True)
-    share.self_destruct(force_file_removal=force)
-    logging.info("Removed share at %s" % share.directory)
+    return share
 
 
 def ensure_users_exist(users):
@@ -127,14 +135,14 @@ def generate_permissions(users, groups, managing_users, managing_groups, domain)
                                        flags='',
                                        identity=user,
                                        domain=domain,
-                                       permissions='rxwadtTNcCo')
+                                       permissions='rxwaDdtTNcCo')
         entries.append(user_ace)
     for group in managing_groups:
         group_ace = AccessControlEntity(entry_type='A',
                                         flags='g',
                                         identity=group,
                                         domain=domain,
-                                        permissions='rxwadtTNcCo')
+                                        permissions='rxwaDdtTNcCo')
         entries.append(group_ace)
 
     acl = AccessControlList(entries)
