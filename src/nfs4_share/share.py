@@ -23,13 +23,7 @@ class Share:
             logging.debug("\'%s\' exists." % os.path.basename(directory))
         if os.path.exists(directory) and os.path.isfile(directory):
             raise IllegalShareSetupError("%s should be not non-existent or a directory!" % directory)
-        os.makedirs(directory, exist_ok=exist_ok)
-        lock_ace = AccessControlEntity(entry_type="D",
-                                       flags="",
-                                       identity="EVERYONE",
-                                       domain='',
-                                       permissions="wadNTo")
-        self.lock_acl = AccessControlList([lock_ace])
+        os.makedirs(self.directory, exist_ok=exist_ok)
 
     def __repr__(self):
         return "Share({!r})".format(os.path.basename(self.directory))
@@ -98,21 +92,27 @@ class Share:
         """
         locks down the share for changing anything other than the access
         """
-        self._lock(self.directory)
+        logging.debug("Locking %s (and subdirectories)" % self.directory)
+        LOCK_ACL.append(target=self.directory)
+        for subdirectory in self._subdirectories():
+            LOCK_ACL.append(target=subdirectory)
 
     def unlock(self):
         """
-        unlocks down the share for changing anything other than the access
+        unlocks the share for changing anything other than the access
         """
-        self._unlock(self.directory)
+        logging.debug("Unlocking %s (and subdirectories)" % self.directory)
+        LOCK_ACL.unset(target=self.directory)
+        for subdirectory in self._subdirectories():
+            LOCK_ACL.unset(target=subdirectory)
 
-    def _lock(self, target):
-        logging.debug("Locking %s recursively" % target)
-        self.lock_acl.append(target=target, recursive=True)
-
-    def _unlock(self, target):
-        logging.debug("Unlocking %s recursively" % target)
-        self.lock_acl.unset(target=target, recursive=True)
+    def _subdirectories(self):
+        """
+        Generator for all subdirectories in a share
+        """
+        for o in os.listdir(self.directory):
+            if os.path.isdir(os.path.join(self.directory, o)):
+                yield os.path.join(self.directory, o)
 
     def _makedir(self, directory):
         """
@@ -127,18 +127,15 @@ class Share:
         Creates a hard link between two files and outputs to log
         """
         try:
-            self._unlock(source)    # prevents locking from messing up the setting of permissions
             logging.debug("Linking %s and %s" % (source, target))
             os.link(os.path.realpath(source), target)
-            self.permissions.append(target=target)
         except PermissionError as e:
-            msg = "ERROR: Insufficient rights on {}! Possible cause; source file need to be writable/appendable when fs.protect_hardlinks is enabled. Permissions: {}"
+            msg = "ERROR: Insufficient rights on {}! " \
+                  "Possible cause; source file need to be writable/appendable when fs.protect_hardlinks is enabled. " \
+                  "Permissions: {}"
             logging.error(msg.format(e.filename, str(AccessControlList.from_file(target))))
         except FileExistsError as e:
-            logging.debug("File %s already exists! Going to remove and re-add it!" % e.filename)
-            # It is already there, either by having been added before or within an update
-            self._unshare_file(target)
-            self._link_files(source, target)
+            logging.debug("File %s already exists!" % e.filename)
 
     def self_destruct(self, force_file_removal=False):
         """
@@ -146,14 +143,16 @@ class Share:
         """
         self._unshare_linked_tree(directory=self.directory, force_file_removal=force_file_removal)
 
-    def _unshare_dir(self, target):
+    @staticmethod
+    def _unshare_dir(target):
         """
         Removes a directory from this share, fails when directory is not empty
         """
         logging.debug("Un-sharing directory %s" % target)
         os.rmdir(target)
 
-    def _unshare_file(self, target, force=False):
+    @staticmethod
+    def _unshare_file(target, force=False):
         """
         Removes a file from this share
         """
@@ -162,9 +161,6 @@ class Share:
             msg = "File %s has ONE hard link. Un-sharing this file will delete it! Apply \'--force\' to do so." % target
             logging.error(msg)
             raise FileNotFoundError(msg)
-        new_permissions = AccessControlList.from_file(target) - self.permissions
-        logging.debug("File %s new permissions: %s" % (target, new_permissions))
-        new_permissions.set(target)
         os.unlink(target)
 
 
@@ -172,3 +168,11 @@ class IllegalShareSetupError(RuntimeError):
     def __init__(self, message):
         # Call the base class constructor with the parameters it needs
         super().__init__(message)
+
+
+LOCK_ACE = AccessControlEntity(entry_type="D",
+                               flags="",
+                               identity="EVERYONE",
+                               domain='',
+                               permissions="wadDNTo")
+LOCK_ACL = AccessControlList([LOCK_ACE])
