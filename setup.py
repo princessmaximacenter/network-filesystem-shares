@@ -31,7 +31,7 @@ setup(
     },
     author="Chris van Run",
     author_email='genomicscore@prinsesmaximacentrum.nl',
-    url='',
+    url='https://github.com/princessmaximacenter/network-filesystem-shares',
     long_description=readme + '\n\n',
     zip_safe=False,
     python_requires='>=3.6.0',
