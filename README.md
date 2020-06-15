@@ -135,3 +135,20 @@ create(share_directory="/data/isi/p/pmc_research/omics/shares/share1",
 delete(share_directory="/data/isi/p/pmc_research/omics/shares/share1")
 
 ```
+
+## Upload new version to PyPi
+This requires an account at [pypi.org](pypi.org) with access to the [project]().
+
+1. Change the version number in `./__version__.py`
+2. Tag a new version 
+
+        git tag v0.1.0
+3. Install required packages for uploading
+
+        pip install --upgrade setuptools wheel twine
+4. Build dist
+
+        python setup.py sdist bdist_wheel
+5. Upload using `twine`
+
+        twine upload dist/*
