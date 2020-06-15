@@ -37,8 +37,8 @@ setup(
     zip_safe=False,
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Data stewards and system admins',
-        'Topic :: Data Sharing :: Network Filesystems',
+        'Intended Audience :: System Administrators',
+        'Topic :: Communications :: File Sharing',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3.6',
