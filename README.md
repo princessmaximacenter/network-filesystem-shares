@@ -94,10 +94,7 @@ When they finish or you need to recreate the share, use NFSv4-SHARE to delete th
 The ACLists on the share directory (i.e. `/shares/foobar`) are the _de facto_ share permissions.
 
 ### Shared Files
-Within the example above, all the _files_ have the original ACEntries **with** the ACEntries for Alice and Bob appended. 
-This is not a real problem since Alice and Bob cannot traverse `/data` and `/raw_data` directories, and can only go 
-through the `/shares/foobar` directory tree. However, when revoking access the new ACEntries have to be carefully 'un-appended'. 
-(`nfs4_share delete` does this for you!)
+Within the example above, all the _files_ have the original ACEntries. These NEED to include reading permissions.
 
 ### Shared Directories
 Any _subdirectories_ from the source that end up in foobar are **different subdirectories(!)**. The directories from 
