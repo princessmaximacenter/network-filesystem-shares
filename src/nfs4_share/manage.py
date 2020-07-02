@@ -57,6 +57,48 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
     return share
 
 
+def add(share_directory, domain=None, items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=False):
+    """
+        Updates a share. The directory representing the share should exist.
+            For more information on input variables run nfs4_share add --help
+    """
+    # Ugly, but best practice to default to empty lists as follows:
+    if items is None:
+        items = []
+    if users is None:
+        users = []
+    if groups is None:
+        groups = []
+    if managing_users is None:
+        managing_users = []
+    if managing_groups is None:
+        managing_groups = []
+    ensure_users_exist(users)
+    ensure_groups_exist(groups)
+    ensure_items_exist(items)
+    share = Share(share_directory, exist_ok=True)
+
+    # Just to be sure,unlock the share (does no harm if no locked)
+    share.unlock()
+    if items:
+        share.add(items)
+
+    # Add the users
+    if users or groups:
+        assert domain, "domain cannot be left empty if trying to add users or groups"
+        acl = share.permissions
+        updated_acl = acl + generate_permissions(users=users,
+                                                 groups=groups,
+                                                 managing_groups=managing_groups,
+                                                 managing_users=managing_users,
+                                                 domain=domain)
+        share.permissions = updated_acl
+
+    if lock:
+        share.lock()
+    return share
+
+
 def delete(share_directory, force=False):
     """
         Deletes a share. The directory representing the share should exist.

@@ -47,7 +47,7 @@ def test_equality_permissions_shuffle(calling_user):
                                domain="op.umcutrecht.nl",
                                permissions='awrdxtTnNcCoy')
     assert ace1 == ace2
-    assert AccessControlList(ace1) == AccessControlList(ace2)
+    assert AccessControlList([ace1]) == AccessControlList([ace2])
 
     ace3 = AccessControlEntity(entry_type='A',
                                flags='fd',
@@ -60,7 +60,7 @@ def test_equality_permissions_shuffle(calling_user):
                                domain="op.umcutrecht.nl",
                                permissions='awrdxtTnNcCoy')
     assert ace3 != ace4
-    assert AccessControlList(ace3) != AccessControlList(ace4)
+    assert AccessControlList([ace3]) != AccessControlList([ace4])
 
     ace5 = AccessControlEntity(entry_type='A',
                                flags='fd',
@@ -73,7 +73,7 @@ def test_equality_permissions_shuffle(calling_user):
                                domain="op.umcutrecht.nl",
                                permissions='rwadxtTnNcCo')
     assert ace5 != ace6
-    assert AccessControlList(ace5) != AccessControlList(ace6)
+    assert AccessControlList([ace5]) != AccessControlList([ace6])
 
 
 def test_acl_minus_acl(calling_user, calling_prim_group):
@@ -117,6 +117,7 @@ def test_acl_minus_acl(calling_user, calling_prim_group):
 
 
 def test_importing_api():
-    from nfs4_share.manage import create, delete
+    from nfs4_share.manage import create, delete, add
     type(create)
     type(delete)
+    type(add)

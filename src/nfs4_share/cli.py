@@ -21,8 +21,9 @@ def _cli_argument_parser():
             {'metavar': "SHARE_DIRECTORY", 'help': "The path to the directory representing the share"}
         ),
         "items": (
-            ["-i", "--items"],
-            {"nargs": "*", "metavar": "ITEM", "action": "extend", "default": [], "help": "one or paths of files or directories to share"}
+            ["-i", "--item", "--items"],
+            {"nargs": "*", "metavar": "ITEM", "action": "extend", "default": [],
+             "help": "one or paths of files or directories to share", "dest": 'items'}
         ),
     }
     parser.add_argument("-v", "--verbose", action="count", default=0,
@@ -30,21 +31,26 @@ def _cli_argument_parser():
     subparsers = parser.add_subparsers(title='subcommands',
                                        description='valid subcommands')
     # Sub-parser for creating a share
-    create_parser = subparsers.add_parser('create', aliases=['new'], help='creates a share directory (help: \'create -h\')')
+    create_parser = subparsers.add_parser('create', aliases=['new'],
+                                          help='creates a share directory (help: \'create -h\')')
     # Following enables the use of extend action; so when doing "prog -i a b -i c" gives [a, b, c] instead of [[a,b], c]
     create_parser.register('action', 'extend', ExtendAction)
     create_parser.set_defaults(func=manage.create)
     for arg in default_args:  # Add the default args (share and item)
         create_parser.add_argument(*default_args[arg][0], **default_args[arg][1])
-    create_parser.add_argument('-u', '--users', action='extend', nargs="*", required=False, metavar='USER', dest='users',
+    create_parser.add_argument('-u', '--user', '--users', action='extend', nargs="*", required=False, metavar='USER',
+                               dest='users',
                                help='give access to user (can be defined multiple times)')
-    create_parser.add_argument('-g', '--groups', action='extend', nargs="*", required=False, metavar='GROUP', dest='groups',
+    create_parser.add_argument('-g', '--group', '--groups', action='extend', nargs="*", required=False, metavar='GROUP',
+                               dest='groups',
                                help='give access to group (can be defined multiple times)')
-    create_parser.add_argument('-mu', '--managing_users', action='extend', nargs="*", required=False, metavar='USER',
+    create_parser.add_argument('-mu', '--managing_user', '--managing_users', action='extend', nargs="*", required=False,
+                               metavar='USER',
                                dest='managing_users',
                                help='give permission to user to manage share (can be defined multiple times)')
-    create_parser.add_argument('-mg', '--managing_groups', action='extend', nargs="*", required=False, metavar='GROUP',
-                               dest='managing_groups',
+    create_parser.add_argument('-mg', '--managing_group', '--managing_groups', action='extend', nargs="*",
+                               required=False,
+                               metavar='GROUP', dest='managing_groups',
                                help='give permission to group to manage share (can be defined multiple times)')
     create_parser.add_argument('-d', '--domain', required=False, default="op.umcutrecht.nl",
                                help="general domain used to build the user and group principles (NFSv4 ACLs) "
@@ -61,13 +67,39 @@ def _cli_argument_parser():
                                     "Default: 'Require ldap-group cn={},ou=groups,dc=genomics,dc=op,dc=umcutrecht,dc=nl' where {} is replaced by the group")
 
     # Sub-parser for removing a share
-    delete_parser = subparsers.add_parser('delete', aliases=['rm', 'remove', 'del'], help='deletes a share directory (help: \'delete -h\')')
+    delete_parser = subparsers.add_parser('delete', aliases=['rm', 'remove', 'del'],
+                                          help='deletes a share directory (help: \'delete -h\')')
     delete_parser.set_defaults(func=manage.delete)
     for args in ['share_directory']:
         delete_parser.add_argument(*default_args[args][0], **default_args[args][1])
     delete_parser.add_argument('-f', '--force', action="store_true", default=False,
                                help="forces files to be un-shared even if they have only one hard link (i.e. delete "
                                     "files)")
+
+    # Sub-parser for adding things to a share
+    add_parser = subparsers.add_parser('add',
+                                       help='adds items, users or groups a share directory (help: \'add -h\')')
+    add_parser.set_defaults(func=manage.add)
+    add_parser.register('action', 'extend', ExtendAction)
+    for args in ['share_directory', 'items']:
+        add_parser.add_argument(*default_args[args][0], **default_args[args][1])
+    add_parser.add_argument('-u', '--user', '--users', action='extend', nargs="*", required=False, metavar='USER',
+                            dest='users',
+                            help='give access to user (can be defined multiple times)')
+    add_parser.add_argument('-g', '--group', '--groups', action='extend', nargs="*", required=False, metavar='GROUP',
+                            dest='groups',
+                            help='give access to group (can be defined multiple times)')
+    add_parser.add_argument('-mu', '--managing_user', '--managing_users', action='extend', nargs="*", required=False,
+                            metavar='USER',
+                            dest='managing_users',
+                            help='give permission to user to manage share (can be defined multiple times)')
+    add_parser.add_argument('-mg', '--managing_group', '--managing_groups', action='extend', nargs="*", required=False,
+                            metavar='GROUP',
+                            dest='managing_groups',
+                            help='give permission to group to manage share (can be defined multiple times)')
+    add_parser.add_argument('-d', '--domain', required=False, default="op.umcutrecht.nl",
+                            help="general domain used to build the user and group principles (NFSv4 ACLs) "
+                                 "Default: 'op.umcutrecht.nl'")
     return parser
 
 

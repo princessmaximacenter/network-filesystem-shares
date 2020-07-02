@@ -133,7 +133,7 @@ class Share:
             msg = "ERROR: Insufficient rights on {}! " \
                   "Possible cause; source file need to be writable/appendable when fs.protect_hardlinks is enabled. " \
                   "Permissions: {}"
-            logging.error(msg.format(e.filename, str(AccessControlList.from_file(target))))
+            logging.error(msg.format(e.filename, str(AccessControlList.from_file(source))))
         except FileExistsError as e:
             logging.debug("File %s already exists!" % e.filename)
 

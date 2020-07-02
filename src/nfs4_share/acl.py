@@ -21,6 +21,8 @@ class AccessControlList:
     """
 
     def __init__(self, entries):
+        if type(entries) not in [set, list]:
+            raise TypeError("Entries should be a set or list")
         self.entries = entries
 
     def __repr__(self):
@@ -37,6 +39,10 @@ class AccessControlList:
         if first_index is None:  # No sublist was found
             return self
         new_acl = AccessControlList(self.entries[:first_index]+self.entries[last_index+1:])
+        return new_acl
+
+    def __add__(self, other):
+        new_acl = AccessControlList(self.entries + other.entries)
         return new_acl
 
     @classmethod
