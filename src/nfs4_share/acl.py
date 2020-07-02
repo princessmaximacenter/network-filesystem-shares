@@ -97,6 +97,19 @@ class AccessControlList:
             logging.error("Subprocess: %s" % e.output.decode())
             raise e
 
+    def get_categorical_identifiers(self):
+        """
+        Returns a tuple with users and groups mentioned in the ACL
+        """
+        users = []
+        groups = []
+        for ace in self.entries:
+            if 'g' in ace.flags:
+                groups.append(ace.identity)
+            else:
+                users.append(ace.identity)
+        return users, groups
+
 
 class AccessControlEntity:
     """

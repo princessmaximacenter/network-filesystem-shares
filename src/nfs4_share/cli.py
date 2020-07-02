@@ -100,6 +100,17 @@ def _cli_argument_parser():
     add_parser.add_argument('-d', '--domain', required=False, default="op.umcutrecht.nl",
                             help="general domain used to build the user and group principles (NFSv4 ACLs) "
                                  "Default: 'op.umcutrecht.nl'")
+    add_parser.add_argument('-uad', '--user-apache-directive', required=False,
+                            default="Require ldap-user {}",
+                            help="This directive template specifies an user who is allowed access "
+                                 "to a share via htaccess. "
+                                 "Default: 'Require ldap-user {}' where {} is replaced by the user")
+    add_parser.add_argument('-gad', '--group-apache-directive', required=False,
+                            default="Require ldap-group cn={},ou=groups,dc=genomics,dc=op,dc=umcutrecht,dc=nl",
+                            help="This directive template specifies an group whose members are allowed access "
+                                 "to a share via htaccess. "
+                                 "Default: 'Require ldap-group cn={},ou=groups,dc=genomics,dc=op,dc=umcutrecht,dc=nl' where {} is replaced by the group")
+
     return parser
 
 

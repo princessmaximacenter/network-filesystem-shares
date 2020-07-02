@@ -77,3 +77,28 @@ def test_cli_with_file(single_file_share, source_dir):
         if e.output is not None:
             print(e.output.decode())
     assert os.path.samefile(os.path.join(single_file_share.directory, "extra_file"), items[0])
+
+
+def test_htaccess_update(single_file_share, extra_user="hkerstens"):
+    user_directive = "Require ldap-user {}"
+    group_directive = "Require ldap-group cn={},cn=users,dc=genomics,dc=op,dc=umcutrecht,dc=nl"
+
+    before_htaccess = []
+    with open(os.path.join(single_file_share.directory, '.htaccess.files.bioinf'), 'r') as htaccess:
+        for entry in htaccess.readlines():
+            before_htaccess.append(entry.rstrip())
+    assert user_directive.format(extra_user) not in before_htaccess
+
+    from nfs4_share.manage import add
+    share = add(single_file_share.directory,
+                users=[extra_user],
+                user_apache_directive=user_directive,
+                group_apache_directive=group_directive,
+                domain='op.umcutrecht.nl'
+                )
+
+    actual_htaccess = []
+    with open(os.path.join(share.directory, '.htaccess.files.bioinf'), 'r') as htaccess:
+        for entry in htaccess.readlines():
+            actual_htaccess.append(entry.rstrip())
+    assert user_directive.format(extra_user) in actual_htaccess
