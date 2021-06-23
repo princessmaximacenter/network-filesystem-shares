@@ -11,7 +11,7 @@ from .acl import AccessControlList, AccessControlEntity
 
 
 def create(share_directory, domain, user_apache_directive="{}", group_apache_directive="{}",
-           items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=True):
+           items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=True, service_application_accounts=None):
     """
     Creates a share. The directory representing the share should be non-existent.
             For more information on input variables run ./share remove --help
@@ -31,8 +31,9 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
         managing_users = []
     if managing_groups is None:
         managing_groups = []
-
-    ensure_users_exist(users + managing_users)
+    if service_application_accounts is None:
+        service_application_accounts = []
+    ensure_users_exist(users + managing_users + service_application_accounts)
     ensure_groups_exist(groups + managing_groups)
     ensure_items_exist(items)
     try:
@@ -40,7 +41,7 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
     except FileExistsError as e:
         logging.exception('Share directory %s already exists!' % share_directory)  # Stack traces by default
         raise e
-    share.permissions = generate_permissions(users=users + ['gen_apache'],
+    share.permissions = generate_permissions(users=users + service_application_accounts,
                                              groups=groups,
                                              managing_users=managing_users,
                                              managing_groups=managing_groups,
@@ -57,7 +58,7 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
     return share
 
 
-def add(share_directory, domain=None, items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=False):
+def add(share_directory, domain=None, items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=False, service_application_accounts=None):
     """
         Updates a share. The directory representing the share should exist.
             For more information on input variables run nfs4_share add --help
@@ -73,6 +74,8 @@ def add(share_directory, domain=None, items=None, users=None, groups=None, manag
         managing_users = []
     if managing_groups is None:
         managing_groups = []
+    if service_application_accounts is None:
+        service_application_accounts = []
     ensure_users_exist(users)
     ensure_groups_exist(groups)
     ensure_items_exist(items)
@@ -87,7 +90,7 @@ def add(share_directory, domain=None, items=None, users=None, groups=None, manag
     if users or groups:
         assert domain, "domain cannot be left empty if trying to add users or groups"
         acl = share.permissions
-        updated_acl = acl + generate_permissions(users=users,
+        updated_acl = acl + generate_permissions(users=users + service_application_accounts,
                                                  groups=groups,
                                                  managing_groups=managing_groups,
                                                  managing_users=managing_users,

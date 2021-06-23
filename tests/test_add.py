@@ -5,7 +5,7 @@ import subprocess
 
 
 @pytest.fixture(scope='function')
-def single_file_share(source_dir, shares_dir, calling_user, calling_prim_group):
+def single_file_share(source_dir, shares_dir, calling_user, calling_prim_group, variables):
     from nfs4_share.manage import create
     items = fabricate_a_source(source_dir, [
         "file"
@@ -14,7 +14,8 @@ def single_file_share(source_dir, shares_dir, calling_user, calling_prim_group):
     group_directive = "Require ldap-group cn={},cn=users,dc=genomics,dc=op,dc=umcutrecht,dc=nl"
     share = create(shares_dir.join('share'), items=items, users=[calling_user], managing_groups=[calling_prim_group],
                    user_apache_directive=user_directive, group_apache_directive=group_directive,
-                   domain="op.umcutrecht.nl")
+                   domain="op.umcutrecht.nl",
+                   service_application_accounts=variables['service_application_accounts'])
     return share
 
 
@@ -62,7 +63,7 @@ def test_add_group(single_file_share, extra_group="pmc_research"):
     assert after_share_permissions == before_share_permissions + acl.AccessControlList([extra_user_permissions])
 
 
-def test_cli_with_file(single_file_share, source_dir):
+def test_cli_with_file(single_file_share, source_dir, variables):
     items = fabricate_a_source(source_dir, [
         "extra_file"
     ])

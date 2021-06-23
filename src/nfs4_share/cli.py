@@ -55,6 +55,8 @@ def _cli_argument_parser():
     create_parser.add_argument('-d', '--domain', required=False, default="op.umcutrecht.nl",
                                help="general domain used to build the user and group principles (NFSv4 ACLs) "
                                     "Default: 'op.umcutrecht.nl'")
+    create_parser.add_argument('-saa', '--service-application-accounts ', required=False, dest='service_application_accounts',
+                               help="service application accounts under which the services (e.g. HTTP) are running that should have access to the share (NFSv4 ACLs)")
     create_parser.add_argument('-uad', '--user-apache-directive', required=False,
                                default="Require ldap-user {}",
                                help="This directive template specifies an user who is allowed access "
@@ -100,6 +102,8 @@ def _cli_argument_parser():
     add_parser.add_argument('-d', '--domain', required=False, default="op.umcutrecht.nl",
                             help="general domain used to build the user and group principles (NFSv4 ACLs) "
                                  "Default: 'op.umcutrecht.nl'")
+    add_parser.add_argument('-saa', '--service-application-accounts ', required=False, dest='service_application_accounts',
+                            help="service application accounts under which the services (e.g. HTTP) are running that should have access to the share (NFSv4 ACLs)")
     return parser
 
 

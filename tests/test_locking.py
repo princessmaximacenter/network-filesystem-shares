@@ -4,7 +4,7 @@ from .utils import fabricate_a_source
 import pytest
 
 
-def test_lock_on_single_file(calling_prim_group, source_dir, shares_dir):
+def test_lock_on_single_file(calling_prim_group, source_dir, shares_dir, variables):
     from nfs4_share.manage import create, delete
 
     items = fabricate_a_source(source_dir, ["file"])
@@ -13,7 +13,8 @@ def test_lock_on_single_file(calling_prim_group, source_dir, shares_dir):
                    items=items,
                    managing_groups=[calling_prim_group],
                    domain="op.umcutrecht.nl",
-                   lock=True)
+                   lock=True,
+                   service_application_accounts=variables['service_application_accounts'])
 
     # Try deleting it manually, should fail
     with pytest.raises(PermissionError):
