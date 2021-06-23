@@ -12,7 +12,7 @@ def test_lock_on_single_file(calling_prim_group, source_dir, shares_dir, variabl
     share = create(share_dir,
                    items=items,
                    managing_groups=[calling_prim_group],
-                   domain="op.umcutrecht.nl",
+                   domain=variables["domain_name"],
                    lock=True,
                    service_application_accounts=variables['service_application_accounts'])
 

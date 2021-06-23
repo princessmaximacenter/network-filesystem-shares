@@ -10,11 +10,9 @@ def single_file_share(source_dir, shares_dir, calling_user, calling_prim_group, 
     items = fabricate_a_source(source_dir, [
         "file"
     ])
-    user_directive = "Require ldap-user {}"
-    group_directive = "Require ldap-group cn={},cn=users,dc=genomics,dc=op,dc=umcutrecht,dc=nl"
     share = create(shares_dir.join('share'), items=items, users=[calling_user], managing_groups=[calling_prim_group],
-                   user_apache_directive=user_directive, group_apache_directive=group_directive,
-                   domain="op.umcutrecht.nl",
+                   user_apache_directive=variables["user_directive"], group_apache_directive=variables["group_directive"],
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     return share
 
@@ -39,25 +37,25 @@ def test_add_file(single_file_share, source_dir):
     assert os.path.samefile(expected_file_added, items[0])
 
 
-def test_add_user(single_file_share, extra_user="hkerstens"):
+def test_add_user(single_file_share, variables):
     from nfs4_share.manage import add
     from nfs4_share import acl
-    extra_user_permissions = acl.AccessControlEntity('A', '', extra_user, 'op.umcutrecht.nl', 'rxtncy')
+    extra_user_permissions = acl.AccessControlEntity('A', '', variables["account_someone_else"], variables["domain_name"], 'rxtncy')
     before_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
 
-    add(single_file_share.directory, users=[extra_user], domain='op.umcutrecht.nl', lock=True)
+    add(single_file_share.directory, users=[variables["account_someone_else"]], domain=variables["domain_name"], lock=True)
     after_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
 
     assert after_share_permissions == before_share_permissions + acl.AccessControlList([extra_user_permissions])
 
 
-def test_add_group(single_file_share, extra_group="pmc_research"):
+def test_add_group(single_file_share, variables, extra_group="pmc_research"):
     from nfs4_share.manage import add
     from nfs4_share import acl
-    extra_user_permissions = acl.AccessControlEntity('A', 'g', extra_group, 'op.umcutrecht.nl', 'rxtncy')
+    extra_user_permissions = acl.AccessControlEntity('A', 'g', extra_group, variables["domain_name"], 'rxtncy')
     before_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
 
-    add(single_file_share.directory, groups=[extra_group], domain='op.umcutrecht.nl', lock=True)
+    add(single_file_share.directory, groups=[extra_group], domain=variables["domain_name"], lock=True)
     after_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
 
     assert after_share_permissions == before_share_permissions + acl.AccessControlList([extra_user_permissions])

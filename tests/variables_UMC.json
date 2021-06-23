@@ -1,3 +1,7 @@
 {
-  "service_application_accounts": ["gen_apache"]
+  "service_application_accounts": ["gen_apache"],
+  "account_someone_else" : "cvanrun",
+  "domain_name" : "op.umcutrecht.nl",
+  "user_directive" : "Require ldap-user {}",
+  "group_directive" : "Require ldap-group cn={},cn=users,dc=genomics,dc=op,dc=umcutrecht,dc=nl"
 }

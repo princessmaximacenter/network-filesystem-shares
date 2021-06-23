@@ -15,7 +15,7 @@ def test_create_with_file(source_dir, shares_dir, calling_prim_group, variables)
     from nfs4_share.manage import create
     items = fabricate_a_source(source_dir, ["file"])
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
-                   domain="op.umcutrecht.nl",
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     assert os.path.samefile(
         j(share.directory, "file"),
@@ -27,7 +27,7 @@ def test_create_with_duplicate_file(source_dir, shares_dir, calling_prim_group, 
     fabricate_a_source(source_dir, ["file"])
     items = [source_dir.join('file'), source_dir.join('file')]
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
-                   domain="op.umcutrecht.nl",
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     assert os.path.samefile(
         j(share.directory, "file"),
@@ -61,7 +61,7 @@ def test_create_with_directory(source_dir, shares_dir, calling_prim_group, varia
     ])
     items = [source_dir.join("dir_with_one_file")]
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
-                   domain="op.umcutrecht.nl",
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     assert os.path.samefile(j(share.directory, "dir_with_one_file", "file"),
                             j(source_dir, "dir_with_one_file", "file"))
@@ -74,7 +74,7 @@ def test_create_with_directory(source_dir, shares_dir, calling_prim_group, varia
     ])
     items = [source_dir.join("dir_with_one_file"), source_dir.join("dir_with_one_file")]
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
-                   domain="op.umcutrecht.nl",
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     assert os.path.samefile(j(share.directory, "dir_with_one_file", "file"),
                             j(source_dir, "dir_with_one_file", "file"))
@@ -89,7 +89,7 @@ def test_create_with_subsubdirs(source_dir, shares_dir, calling_prim_group, vari
     ])
     items = [source_dir.join("dir1")]
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
-                   domain="op.umcutrecht.nl",
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     assert os.path.samefile(j(share.directory, "dir1", "dir2", "dir3", "file"),
                             j(source_dir, "dir1", "dir2", "dir3", "file"))
@@ -105,7 +105,7 @@ def test_create_with_mixed_items(source_dir, shares_dir, calling_prim_group, var
         source_dir.join("dir_with_one_file"),
         source_dir.join("file")]
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
-                   domain="op.umcutrecht.nl",
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     assert os.path.samefile(j(share.directory, "dir_with_one_file", "file"),
                             j(source_dir, "dir_with_one_file", "file"))
@@ -121,7 +121,7 @@ def test_create_with_symlinked_file(source_dir, shares_dir, calling_prim_group, 
     os.symlink(os.path.realpath(source_dir.join("file")), source_dir.join("symlink"))
     items = [source_dir.join("symlink")]
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
-                   domain="op.umcutrecht.nl",
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     assert os.path.samefile(j(share.directory, "symlink"), source_dir.join("file"))
 
@@ -134,7 +134,7 @@ def test_create_with_symlinked_directory(source_dir, shares_dir, calling_prim_gr
     os.symlink(os.path.realpath(source_dir.join("dir_with_one_file")), source_dir.join("symlink"))
     items = [source_dir.join("symlink")]
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
-                   domain="op.umcutrecht.nl",
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     assert os.path.samefile(j(share.directory, "symlink", "file"), source_dir.join("dir_with_one_file", "file"))
 
@@ -148,7 +148,7 @@ def test_create_with_relative_symlinked_file(source_dir, shares_dir, calling_pri
     os.symlink(j("..", "file"), j(source_dir, "dir_with_rel_symlink", "symlink"))
     items = [source_dir.join("dir_with_rel_symlink")]
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
-                   domain="op.umcutrecht.nl",
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     assert os.path.samefile(j(share.directory, "dir_with_rel_symlink", "symlink"), source_dir.join("file"))
 
@@ -162,7 +162,7 @@ def test_create_with_relative_symlinked_directory(source_dir, shares_dir, callin
     os.symlink(j("..", "dir"), j(source_dir, "dir_with_rel_symlink", "symlink"))
     items = [j(source_dir, "dir_with_rel_symlink")]
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
-                   domain="op.umcutrecht.nl",
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     assert os.path.samefile(j(share.directory, "dir_with_rel_symlink", "symlink", "file"),
                             j(source_dir, "dir", "file"))
@@ -179,14 +179,14 @@ def test_permissions_create_with_file(source_dir, shares_dir, calling_user, call
     managing_groups = [calling_prim_group]
     pass
     share = create(shares_dir.join('share'), items=items, users=users, managing_groups=managing_groups,
-                   domain="op.umcutrecht.nl", lock=False,
+                   domain=variables["domain_name"], lock=False,
                    service_application_accounts=variables['service_application_accounts'])
-    user_permissions = acl.AccessControlEntity('A', '', calling_user, 'op.umcutrecht.nl', 'rxtncy')
-    extra_permissions = acl.AccessControlEntity('A', '', 'gen_apache', 'op.umcutrecht.nl', 'rxtncy')
+    user_permissions = acl.AccessControlEntity('A', '', calling_user, variables["domain_name"], 'rxtncy')
+    extra_permissions = acl.AccessControlEntity('A', '', variables['service_application_accounts'][0], variables["domain_name"], 'rxtncy')
     managing_group_permissions = acl.AccessControlEntity('A',
                                                          'g',
                                                          calling_prim_group,
-                                                         'op.umcutrecht.nl',
+                                                         variables["domain_name"],
                                                          'rxwaDdtTNcCo')
     assert user_permissions in share.permissions
     assert extra_permissions in share.permissions
@@ -203,16 +203,14 @@ def test_htaccess_create_with_file(source_dir, shares_dir, calling_user, calling
     items = fabricate_a_source(source_dir, [
         "file"
     ])
-    user_directive = "Require ldap-user {}"
-    group_directive = "Require ldap-group cn={},cn=users,dc=genomics,dc=op,dc=umcutrecht,dc=nl"
     share = create(shares_dir.join('share'), items=items, users=[calling_user], managing_groups=[calling_prim_group],
-                   user_apache_directive=user_directive, group_apache_directive=group_directive,
-                   domain="op.umcutrecht.nl",
+                   user_apache_directive=variables["user_directive"], group_apache_directive=variables["group_directive"],
+                   domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
     expected_htaccess = [
         '<RequireAny>',
-        user_directive.format(calling_user),
-        group_directive.format(calling_prim_group),
+        variables["user_directive"].format(calling_user),
+        variables["group_directive"].format(calling_prim_group),
         '</RequireAny>'
     ]
     actual_htaccess = []
