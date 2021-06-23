@@ -113,11 +113,15 @@ pytest --basetemp=<NFS4_MOUNT>
 
 If the source code is not stored on an NFSv4 mount, you should first move it to an NFSv4 mount before unit testing.
 
-Luckily, this is already automated in the following script. It will push the source code to the Horus server and have the
+Luckily, this is already automated in the following script. It will push the source code to the remote server and have the
 unittest runs there locally.
 ```bash
-bash tests/run_test_on_remote_server.sh
+bash tests/run_test_on_remote_server.sh <ssh_remote_host> <remote_working_directory> <remote_nfs4_mount_for_creating_shares> <test_variables.json>
 ```
+example: bash tests/run_test_on_remote_server.sh gwhorus test_shares_exc /data/isi/p/pmc_research/omics/development/shares tests/variables_UMC.json
+
+In case you are working on a cripled OS lacking the "realpath" function then use run_test_on_remote_server_mac.sh
+
       
       
 ## Python Module Interface

@@ -5,6 +5,22 @@ display_usage() {
 	echo -e "\nUsage:\n$0 <SSH_TARGET_HOST> <SSH_TARGET_DIR> <NFS4_MOUNT_DIR> <TEST_VARIABLES> <PYTEST ARGUMENTS>\n"
 	}
 
+
+realpath() {
+  OURPWD=$PWD
+  cd "$(dirname "$1")"
+  LINK=$(readlink "$(basename "$1")")
+  while [ "$LINK" ]; do
+    cd "$(dirname "$LINK")"
+    LINK=$(readlink "$(basename "$1")")
+  done
+  REALPATH="$PWD/$(basename "$1")"
+  cd "$OURPWD"
+  echo "$REALPATH"
+}
+
+
+
 set -xeu
 
 # if less than two arguments supplied, display usage
@@ -19,7 +35,6 @@ target_host="$1"
 target_dir="$2"
 nfs4_mount_dir="$3"
 variables="$4"
-
 
 this_script_path="$( cd "$(dirname "$0")" ; pwd -P )"
 nfs4_share_dir=$(realpath "${this_script_path}/..")
