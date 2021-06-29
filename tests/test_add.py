@@ -69,6 +69,7 @@ def test_cli_with_file(single_file_share, source_dir, variables):
         subprocess.check_output(['nfs4_share',
                                  '-vv', 'add',
                                  single_file_share.directory,
+                                 '--domain', variables["domain_name"],
                                  '--item', items[0]],
                                 stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:

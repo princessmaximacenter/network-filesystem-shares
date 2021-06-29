@@ -34,7 +34,7 @@ def test_create_with_duplicate_file(source_dir, shares_dir, calling_prim_group, 
         items[0])
 
 
-def test_cli_with_files(source_dir, shares_dir, calling_user):
+def test_cli_with_files(source_dir, shares_dir, calling_user, variables):
     items = fabricate_a_source(source_dir, [
         "file1",
         "file2"
@@ -43,6 +43,7 @@ def test_cli_with_files(source_dir, shares_dir, calling_user):
         subprocess.check_output(['nfs4_share',
                                  '-vv', 'create',
                                  shares_dir.join('share'),
+                                 '--domain', variables["domain_name"],
                                  '--item', items[0], items[1],
                                  '-mu', calling_user],
                                 stderr=subprocess.STDOUT)
