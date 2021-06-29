@@ -1,6 +1,6 @@
 {
   "service_application_accounts": ["fn_httpd_omics"],
-  "account_someone_else" : "cvanrun",
+  "account_someone_else" : "everwiel",
   "domain_name" : "researchidt.prinsesmaximacentrum.nl",
   "user_directive" : "Require ldap-user {}",
   "group_directive" : "Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,dc=prinsesmaximacentrum,dc=nl"
