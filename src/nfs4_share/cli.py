@@ -3,6 +3,7 @@
 import argparse
 import logging
 import sys
+import subprocess
 from . import manage
 
 
@@ -14,6 +15,8 @@ def _cli_argument_parser():
     parser = argparse.ArgumentParser(
         prog="share",
         description="Shares only work when items and share are on the same filesystem that supports NFSv4 ACL.")
+
+    default_domain = subprocess.run(['dnsdomainname'], stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
 
     default_args = {
         "share_directory": (
@@ -52,9 +55,9 @@ def _cli_argument_parser():
                                required=False,
                                metavar='GROUP', dest='managing_groups',
                                help='give permission to group to manage share (can be defined multiple times)')
-    create_parser.add_argument('-d', '--domain', required=False, default="op.umcutrecht.nl",
+    create_parser.add_argument('-d', '--domain', required=False, dest='domain', default=default_domain,
                                help="general domain used to build the user and group principles (NFSv4 ACLs) "
-                                    "Default: 'op.umcutrecht.nl'")
+                                    "if not provided it is looked up using command dnsdomainname")
     create_parser.add_argument('-saa', '--service-application-accounts ', required=False, dest='service_application_accounts',
                                help="service application accounts under which the services (e.g. HTTP) are running that should have access to the share (NFSv4 ACLs)")
     create_parser.add_argument('-uad', '--user-apache-directive', required=False,
@@ -99,9 +102,9 @@ def _cli_argument_parser():
                             metavar='GROUP',
                             dest='managing_groups',
                             help='give permission to group to manage share (can be defined multiple times)')
-    add_parser.add_argument('-d', '--domain', required=False, default="op.umcutrecht.nl",
-                            help="general domain used to build the user and group principles (NFSv4 ACLs) "
-                                 "Default: 'op.umcutrecht.nl'")
+    add_parser.add_argument('-d', '--domain', required=False, dest='domain', default=default_domain,
+                            help="general domain used to build the user and group principles (NFSv4 ACLs)"
+                                 "if not provided it is looked up using command dnsdomainname")
     add_parser.add_argument('-saa', '--service-application-accounts ', required=False, dest='service_application_accounts',
                             help="service application accounts under which the services (e.g. HTTP) are running that should have access to the share (NFSv4 ACLs)")
     return parser
