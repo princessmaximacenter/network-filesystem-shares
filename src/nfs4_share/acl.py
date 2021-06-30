@@ -168,10 +168,11 @@ class AccessControlEntity:
         return cls(entry_type, flags, identity, domain, permissions)
 
     @staticmethod
-    def translate_special_principals(principal, filename, flags, domain='op.umcutrecht.nl'):
+    def translate_special_principals(principal, filename, flags):
         """
-        Translates a special principal to the actual user / group name. Has the domain hard coded.
+        Translates a special principal to the actual user / group name. Assumes that the NFS4 share domain is the same as the DNS domain of the client machine.
         Returns identity, domain and flags"""
+        domain = subprocess.run(['dnsdomainname'], stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
         stat_info = os.stat(filename)
         if 'OWNER@' == principal:
             uid = stat_info.st_uid
