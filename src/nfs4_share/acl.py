@@ -1,4 +1,5 @@
 import os
+import re
 import pwd
 import grp
 import subprocess
@@ -170,9 +171,9 @@ class AccessControlEntity:
     @staticmethod
     def translate_special_principals(principal, filename, flags):
         """
-        Translates a special principal to the actual user / group name. Assumes that the NFS4 share domain is the same as the DNS domain of the client machine.
+        Translates a special principal to the actual user / group name. NFS4 share domain is taken from /etc/idmapd.conf and falls back on `dnsdomainname`.
         Returns identity, domain and flags"""
-        domain = subprocess.run(['dnsdomainname'], stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+        domain = get_nfs4_domain()
         stat_info = os.stat(filename)
         if 'OWNER@' == principal:
             uid = stat_info.st_uid
@@ -187,6 +188,17 @@ class AccessControlEntity:
             return "EVERYONE", '', flags
         else:
             raise NotImplementedError("Cannot translate %s" % principal)
+
+
+def get_nfs4_domain():
+    domain = subprocess.run(['egrep', '-s', '^Domain', '/etc/idmapd.conf'], stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+    try:
+        domain = re.search('[a-z\\.\\-]+$', domain).group(0)
+    except AttributeError:
+        pass
+    if len(domain) == 0:
+        domain = subprocess.run(['dnsdomainname'], stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+    return (domain)
 
 
 def nonblank_lines(f):

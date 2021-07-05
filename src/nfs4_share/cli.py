@@ -5,6 +5,7 @@ import logging
 import sys
 import subprocess
 from . import manage
+from . import acl
 
 
 def _cli_argument_parser():
@@ -16,7 +17,7 @@ def _cli_argument_parser():
         prog="share",
         description="Shares only work when items and share are on the same filesystem that supports NFSv4 ACL.")
 
-    default_domain = subprocess.run(['dnsdomainname'], stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+    default_domain = acl.get_nfs4_domain()
 
     default_args = {
         "share_directory": (
