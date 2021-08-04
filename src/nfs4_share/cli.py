@@ -67,7 +67,7 @@ def _cli_argument_parser():
                                     "to a share via htaccess. "
                                     "Default: 'Require ldap-user {}' where {} is replaced by the user")
     create_parser.add_argument('-gad', '--group-apache-directive', required=False,
-                               default="Require ldap-group cn={},cn=groups,dc=accounts,dc=researchidt,dc=prinsesmaximacentrum,dc=nl",
+                               default="Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,dc=prinsesmaximacentrum,dc=nl",
                                help="This directive template specifies an group whose members are allowed access "
                                     "to a share via htaccess. "
                                     "Default: 'Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,dc=prinsesmaximacentrum,dc=nl' where {} is replaced by the group")
