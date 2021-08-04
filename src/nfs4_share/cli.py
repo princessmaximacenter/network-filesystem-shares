@@ -149,7 +149,7 @@ def main(parser):
 
     if args.func.__name__ != 'delete':
         logging.info("Filesystem path to share is: %s" % share.directory)
-        data_dir = '/data/groups/pmc_omics_test'
+        data_dir = '/data/groups/pmc_omics'
         fqdn_url = 'https://files.bioinf.prinsesmaximacentrum.nl'
         if share.directory.count(data_dir) > 0:
             logging.info("URL to share: %s" % share.directory.replace(data_dir, fqdn_url))
