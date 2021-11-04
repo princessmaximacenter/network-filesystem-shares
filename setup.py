@@ -46,5 +46,5 @@ setup(
     python_requires='>=3.6.0',
     include_package_data=True,
     license="MIT",
-    extras_require={'test': ['pytest', 'pycodestyle']},
+    extras_require={'test': ['pytest', 'pycodestyle', 'parse']},
 )

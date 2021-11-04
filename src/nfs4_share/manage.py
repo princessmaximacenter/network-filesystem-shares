@@ -51,14 +51,15 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
                        users=users + managing_users,
                        user_directive_template=user_apache_directive,
                        groups=groups + managing_groups,
-                       group_directive_template=group_apache_directive, )
+                       group_directive_template=group_apache_directive)
     logging.info("Finished creating share at %s" % share.directory)
     if lock:
         share.lock()
     return share
 
 
-def add(share_directory, domain=None, items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=False, service_application_accounts=None):
+def add(share_directory, user_apache_directive, group_apache_directive, domain=None, items=None, users=None,
+        groups=None, managing_users=None, managing_groups=None, lock=False, service_application_accounts=None):
     """
         Updates a share. The directory representing the share should exist.
             For more information on input variables run nfs4_share add --help
@@ -89,6 +90,11 @@ def add(share_directory, domain=None, items=None, users=None, groups=None, manag
     # Add the users
     if users or groups:
         assert domain, "domain cannot be left empty if trying to add users or groups"
+        htaccess.append_at(share=share,
+                           users=users + managing_users,
+                           user_directive_template=user_apache_directive,
+                           groups=groups + managing_groups,
+                           group_directive_template=group_apache_directive)
         acl = share.permissions
         updated_acl = acl + generate_permissions(users=users + service_application_accounts,
                                                  groups=groups,
