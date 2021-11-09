@@ -3,7 +3,7 @@ import os
 import logging
 import warnings
 import parse
-from share import Share
+from .share import Share
 
 
 def create_at(share, users, user_directive_template, groups, group_directive_template, filename='.htaccess.files.bioinf'):

@@ -43,7 +43,7 @@ class AccessControlList:
         return new_acl
 
     def __add__(self, other):
-        new_acl = AccessControlList(self.entries + other.entries)
+        new_acl = AccessControlList(set(self.entries + other.entries))
         return new_acl
 
     @classmethod
@@ -135,6 +135,9 @@ class AccessControlEntity:
             if perm not in other.permissions:
                 return False
         return True
+
+    def __hash__(self):
+        return hash(str(self))
 
     @property
     def permissions(self):
