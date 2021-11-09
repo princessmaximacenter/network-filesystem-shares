@@ -59,18 +59,22 @@ def _cli_argument_parser():
     create_parser.add_argument('-d', '--domain', required=False, dest='domain', default=default_domain,
                                help="general domain used to build the user and group principles (NFSv4 ACLs) "
                                     "if not provided it is looked up using command dnsdomainname")
-    create_parser.add_argument('-saa', '--service-application-accounts ', action='extend', nargs="*", required=False, dest='service_application_accounts',
-                               help="service application accounts under which the services (e.g. HTTP) are running that should have access to the share (NFSv4 ACLs)")
+    create_parser.add_argument('-saa', '--service-application-accounts ', action='extend', nargs="*", required=False,
+                               dest='service_application_accounts',
+                               help="service application accounts under which the services (e.g. HTTP) are running "
+                                    "that should have access to the share (NFSv4 ACLs)")
     create_parser.add_argument('-uad', '--user-apache-directive', required=False,
                                default="Require ldap-user {}",
                                help="This directive template specifies an user who is allowed access "
                                     "to a share via htaccess. "
                                     "Default: 'Require ldap-user {}' where {} is replaced by the user")
     create_parser.add_argument('-gad', '--group-apache-directive', required=False,
-                               default="Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,dc=prinsesmaximacentrum,dc=nl",
+                               default="Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,"
+                                       "dc=prinsesmaximacentrum,dc=nl",
                                help="This directive template specifies an group whose members are allowed access "
                                     "to a share via htaccess. "
-                                    "Default: 'Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,dc=prinsesmaximacentrum,dc=nl' where {} is replaced by the group")
+                                    "Default: 'Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,"
+                                    "dc=prinsesmaximacentrum,dc=nl' where {} is replaced by the group")
 
     # Sub-parser for removing a share
     delete_parser = subparsers.add_parser('delete', aliases=['rm', 'remove', 'del'],

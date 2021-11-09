@@ -174,7 +174,8 @@ class AccessControlEntity:
     @staticmethod
     def translate_special_principals(principal, filename, flags):
         """
-        Translates a special principal to the actual user / group name. NFS4 share domain is taken from /etc/idmapd.conf and falls back on `dnsdomainname`.
+        Translates a special principal to the actual user / group name. NFS4 share domain is taken from
+        /etc/idmapd.conf and falls back on `dnsdomainname`.
         Returns identity, domain and flags"""
         domain = get_nfs4_domain()
         stat_info = os.stat(filename)
@@ -194,7 +195,8 @@ class AccessControlEntity:
 
 
 def get_nfs4_domain():
-    domain = subprocess.run(['egrep', '-s', '^Domain', '/etc/idmapd.conf'], stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+    domain = subprocess.run(['egrep', '-s', '^Domain', '/etc/idmapd.conf'],
+                            stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
     try:
         domain = re.search('[a-z\\.\\-]+$', domain).group(0)
     except AttributeError:

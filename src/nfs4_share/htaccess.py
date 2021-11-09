@@ -6,7 +6,8 @@ import parse
 from .share import Share
 
 
-def create_at(share, users, user_directive_template, groups, group_directive_template, filename='.htaccess.files.bioinf'):
+def create_at(share, users, user_directive_template, groups, group_directive_template,
+              filename='.htaccess.files.bioinf'):
     """
     Creates an .htaccess (or alternative filename) to give access for an apache server to provide access to a share
     """

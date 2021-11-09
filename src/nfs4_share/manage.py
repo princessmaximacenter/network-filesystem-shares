@@ -11,7 +11,8 @@ from .acl import AccessControlList, AccessControlEntity
 
 
 def create(share_directory, domain, user_apache_directive="{}", group_apache_directive="{}",
-           items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=True, service_application_accounts=None):
+           items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=True,
+           service_application_accounts=None):
     """
     Creates a share. The directory representing the share should be non-existent.
             For more information on input variables run ./share remove --help
