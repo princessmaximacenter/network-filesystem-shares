@@ -121,8 +121,10 @@ class Share:
         target = self.MANAGE_PERMISSION_LOCK if add_write else self.MANAGE_PERMISSION_UNLOCK
         replacement = self.MANAGE_PERMISSION_UNLOCK if add_write else self.MANAGE_PERMISSION_LOCK
         for entry in self.permissions.entries:
-            if entry.__contains__(target):
-                entry.replace(target, replacement)
+            permission = entry.permissions
+            if permission == target:
+                permission = replacement
+                entry.permissions = permission
             new_entries.append(entry)
         self.permissions = AccessControlList(new_entries)
 
