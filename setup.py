@@ -46,6 +46,7 @@ setup(
     python_requires='>=3.6.0',
     include_package_data=True,
     license="MIT",
-    extras_require={'test': ['pytest', 'pycodestyle', 'parse']},
+    extras_require={'test': ['pytest', 'pycodestyle']},
+    setup_requires=['wheel'],
     install_requires=['wheel', 'parse']
 )

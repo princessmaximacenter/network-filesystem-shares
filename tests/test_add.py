@@ -40,13 +40,17 @@ def test_add_file(single_file_share, source_dir):
 def test_add_user(single_file_share, variables):
     from nfs4_share.manage import add
     from nfs4_share import acl
-    extra_user_permissions = acl.AccessControlEntity('A', '', variables["account_someone_else"], variables["domain_name"], 'rxtncy')
+    extra_user_permissions = acl.AccessControlEntity('A', '', variables["account_someone_else"],
+                                                     variables["domain_name"], 'rxtncy')
     before_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
 
-    add(single_file_share.directory, users=[variables["account_someone_else"]], domain=variables["domain_name"], lock=True)
+    add(single_file_share.directory, users=[variables["account_someone_else"]], domain=variables["domain_name"],
+        lock=True, user_apache_directive=variables["user_directive"],
+        group_apache_directive=variables["group_directive"])
     after_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
 
-    assert after_share_permissions == before_share_permissions + acl.AccessControlList([extra_user_permissions])
+    assert sorted(after_share_permissions.entries) == sorted(before_share_permissions.entries +
+                                                             acl.AccessControlList([extra_user_permissions]).entries)
 
 
 def test_add_group(single_file_share, variables, extra_group="pmc_research"):
@@ -55,10 +59,12 @@ def test_add_group(single_file_share, variables, extra_group="pmc_research"):
     extra_user_permissions = acl.AccessControlEntity('A', 'g', extra_group, variables["domain_name"], 'rxtncy')
     before_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
 
-    add(single_file_share.directory, groups=[extra_group], domain=variables["domain_name"], lock=True)
+    add(single_file_share.directory, groups=[extra_group], domain=variables["domain_name"], lock=True,
+        user_apache_directive=variables["user_directive"], group_apache_directive=variables["group_directive"])
     after_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
 
-    assert after_share_permissions == before_share_permissions + acl.AccessControlList([extra_user_permissions])
+    assert sorted(after_share_permissions.entries) == sorted(before_share_permissions.entries +
+                                                             acl.AccessControlList([extra_user_permissions]).entries)
 
 
 def test_cli_with_file(single_file_share, source_dir, variables):

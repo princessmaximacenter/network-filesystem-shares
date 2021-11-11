@@ -59,7 +59,7 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
     return share
 
 
-def add(share_directory, user_apache_directive, group_apache_directive, domain=None, items=None, users=None,
+def add(share_directory, user_apache_directive="{}", group_apache_directive="{}", domain=None, items=None, users=None,
         groups=None, managing_users=None, managing_groups=None, lock=False, service_application_accounts=None):
     """
         Updates a share. The directory representing the share should exist.
@@ -187,14 +187,14 @@ def generate_permissions(users, groups, managing_users, managing_groups, domain)
                                        flags='',
                                        identity=user,
                                        domain=domain,
-                                       permissions='rxwaDdtTNcCo')
+                                       permissions='rwxaDdtTNcCo')
         entries.append(user_ace)
     for group in managing_groups:
         group_ace = AccessControlEntity(entry_type='A',
                                         flags='g',
                                         identity=group,
                                         domain=domain,
-                                        permissions='rxwaDdtTNcCo')
+                                        permissions='rwxaDdtTNcCo')
         entries.append(group_ace)
 
     acl = AccessControlList(entries)

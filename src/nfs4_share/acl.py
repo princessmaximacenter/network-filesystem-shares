@@ -35,6 +35,9 @@ class AccessControlList:
     def __iter__(self):
         return iter(self.entries)
 
+    def __lt__(self, other):
+        return str(self) > str(other)
+
     def __sub__(self, other):  # self - other
         first_index, last_index = find_sub_list(other.entries, self.entries)
         if first_index is None:  # No sublist was found
