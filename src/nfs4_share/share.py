@@ -17,6 +17,9 @@ class Share:
     * `/usr/bin/nfs4_setfacl`
     * `/usr/bin/nfs4_getfacl`
     """
+    MANAGE_PERMISSION_LOCK = "rxaDdtTNcCo"
+    MANAGE_PERMISSION_UNLOCK = "rwxaDdtTNcCo"
+
     def __init__(self, directory, exist_ok=False):
         self.directory = os.path.realpath(directory)
         if os.path.exists(directory):
@@ -93,6 +96,7 @@ class Share:
         locks down the share for changing anything other than the access
         """
         logging.debug("Locking %s (and subdirectories)" % self.directory)
+        self._adjust_manage_write_permissions(add_write=False)
         LOCK_ACL.append(target=self.directory)
         for subdirectory in self._subdirectories():
             LOCK_ACL.append(target=subdirectory)
@@ -102,9 +106,25 @@ class Share:
         unlocks the share for changing anything other than the access
         """
         logging.debug("Unlocking %s (and subdirectories)" % self.directory)
+        self._adjust_manage_write_permissions(add_write=True)
         LOCK_ACL.unset(target=self.directory)
         for subdirectory in self._subdirectories():
             LOCK_ACL.unset(target=subdirectory)
+
+    def _adjust_manage_write_permissions(self, add_write: bool):
+        """
+        Method to find manage permission ACL and add/remove write permission.
+        :param add_write: If True find MANAGE_PERMISSION_LOCK and change to MANAGE_PERMISSION_UNLOCK; if False visa versa
+        :type add_write: Bool
+        """
+        new_entries = []
+        target = self.MANAGE_PERMISSION_LOCK if add_write else self.MANAGE_PERMISSION_UNLOCK
+        replacement = self.MANAGE_PERMISSION_UNLOCK if add_write else self.MANAGE_PERMISSION_LOCK
+        for entry in self.permissions.entries:
+            if entry.__contains__(target):
+                entry.replace(target, replacement)
+            new_entries.append(entry)
+        self.permissions = AccessControlList(new_entries)
 
     def _subdirectories(self):
         """

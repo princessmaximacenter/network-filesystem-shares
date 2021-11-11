@@ -46,7 +46,8 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
                                              groups=groups,
                                              managing_users=managing_users,
                                              managing_groups=managing_groups,
-                                             domain=domain)
+                                             domain=domain,
+                                             manage_permissions=share.MANAGE_PERMISSION_UNLOCK)
     share.add(items)
     htaccess.create_at(share=share,
                        users=users + managing_users,
@@ -101,7 +102,8 @@ def add(share_directory, user_apache_directive="{}", group_apache_directive="{}"
                                                  groups=groups,
                                                  managing_groups=managing_groups,
                                                  managing_users=managing_users,
-                                                 domain=domain)
+                                                 domain=domain,
+                                                 manage_permissions=share.MANAGE_PERMISSION_UNLOCK)
         share.permissions = updated_acl
 
     if lock:
@@ -163,7 +165,7 @@ def ensure_items_exist(items):
             raise FileNotFoundError("Items '%s' does not exist! (%s)" % (os.path.basename(item), item))
 
 
-def generate_permissions(users, groups, managing_users, managing_groups, domain):
+def generate_permissions(users, groups, managing_users, managing_groups, domain, manage_permissions):
     """
     Builds and returns an Access Control List.
     """
@@ -187,14 +189,14 @@ def generate_permissions(users, groups, managing_users, managing_groups, domain)
                                        flags='',
                                        identity=user,
                                        domain=domain,
-                                       permissions='rwxaDdtTNcCo')
+                                       permissions=manage_permissions)
         entries.append(user_ace)
     for group in managing_groups:
         group_ace = AccessControlEntity(entry_type='A',
                                         flags='g',
                                         identity=group,
                                         domain=domain,
-                                        permissions='rwxaDdtTNcCo')
+                                        permissions=manage_permissions)
         entries.append(group_ace)
 
     acl = AccessControlList(entries)
