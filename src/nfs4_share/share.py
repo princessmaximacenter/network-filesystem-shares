@@ -122,7 +122,7 @@ class Share:
         replacement = self.MANAGE_PERMISSION_UNLOCK if add_write else self.MANAGE_PERMISSION_LOCK
         for entry in self.permissions.entries:
             permission = entry.permissions
-            if permission == target:
+            if sorted(list(permission)) == sorted(list(target)):
                 permission = replacement
                 entry.permissions = permission
             new_entries.append(entry)

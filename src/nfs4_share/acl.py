@@ -142,6 +142,9 @@ class AccessControlEntity:
     def __hash__(self):
         return hash(str(self))
 
+    def __lt__(self, other):
+        return str(self) > str(other)
+
     @property
     def permissions(self):
         return self._permissions
