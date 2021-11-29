@@ -11,7 +11,8 @@ from .acl import AccessControlList, AccessControlEntity
 
 
 def create(share_directory, domain, user_apache_directive="{}", group_apache_directive="{}",
-           items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=True, service_application_accounts=None):
+           items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=True,
+           service_application_accounts=None):
     """
     Creates a share. The directory representing the share should be non-existent.
             For more information on input variables run ./share remove --help
@@ -45,20 +46,22 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
                                              groups=groups,
                                              managing_users=managing_users,
                                              managing_groups=managing_groups,
-                                             domain=domain)
+                                             domain=domain,
+                                             manage_permissions=share.MANAGE_PERMISSION_UNLOCK)
     share.add(items)
     htaccess.create_at(share=share,
                        users=users + managing_users,
                        user_directive_template=user_apache_directive,
                        groups=groups + managing_groups,
-                       group_directive_template=group_apache_directive, )
+                       group_directive_template=group_apache_directive)
     logging.info("Finished creating share at %s" % share.directory)
     if lock:
         share.lock()
     return share
 
 
-def add(share_directory, domain=None, items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=False, service_application_accounts=None):
+def add(share_directory, user_apache_directive="{}", group_apache_directive="{}", domain=None, items=None, users=None,
+        groups=None, managing_users=None, managing_groups=None, lock=False, service_application_accounts=None):
     """
         Updates a share. The directory representing the share should exist.
             For more information on input variables run nfs4_share add --help
@@ -89,12 +92,18 @@ def add(share_directory, domain=None, items=None, users=None, groups=None, manag
     # Add the users
     if users or groups:
         assert domain, "domain cannot be left empty if trying to add users or groups"
+        htaccess.append_at(share=share,
+                           users=users + managing_users,
+                           user_directive_template=user_apache_directive,
+                           groups=groups + managing_groups,
+                           group_directive_template=group_apache_directive)
         acl = share.permissions
         updated_acl = acl + generate_permissions(users=users + service_application_accounts,
                                                  groups=groups,
                                                  managing_groups=managing_groups,
                                                  managing_users=managing_users,
-                                                 domain=domain)
+                                                 domain=domain,
+                                                 manage_permissions=share.MANAGE_PERMISSION_UNLOCK)
         share.permissions = updated_acl
 
     if lock:
@@ -156,7 +165,7 @@ def ensure_items_exist(items):
             raise FileNotFoundError("Items '%s' does not exist! (%s)" % (os.path.basename(item), item))
 
 
-def generate_permissions(users, groups, managing_users, managing_groups, domain):
+def generate_permissions(users, groups, managing_users, managing_groups, domain, manage_permissions):
     """
     Builds and returns an Access Control List.
     """
@@ -180,14 +189,14 @@ def generate_permissions(users, groups, managing_users, managing_groups, domain)
                                        flags='',
                                        identity=user,
                                        domain=domain,
-                                       permissions='rxwaDdtTNcCo')
+                                       permissions=manage_permissions)
         entries.append(user_ace)
     for group in managing_groups:
         group_ace = AccessControlEntity(entry_type='A',
                                         flags='g',
                                         identity=group,
                                         domain=domain,
-                                        permissions='rxwaDdtTNcCo')
+                                        permissions=manage_permissions)
         entries.append(group_ace)
 
     acl = AccessControlList(entries)

@@ -35,6 +35,9 @@ class AccessControlList:
     def __iter__(self):
         return iter(self.entries)
 
+    def __lt__(self, other):
+        return str(self) > str(other)
+
     def __sub__(self, other):  # self - other
         first_index, last_index = find_sub_list(other.entries, self.entries)
         if first_index is None:  # No sublist was found
@@ -43,7 +46,7 @@ class AccessControlList:
         return new_acl
 
     def __add__(self, other):
-        new_acl = AccessControlList(self.entries + other.entries)
+        new_acl = AccessControlList(set(self.entries + other.entries))
         return new_acl
 
     @classmethod
@@ -136,6 +139,12 @@ class AccessControlEntity:
                 return False
         return True
 
+    def __hash__(self):
+        return hash(str(self))
+
+    def __lt__(self, other):
+        return str(self) > str(other)
+
     @property
     def permissions(self):
         return self._permissions
@@ -171,7 +180,8 @@ class AccessControlEntity:
     @staticmethod
     def translate_special_principals(principal, filename, flags):
         """
-        Translates a special principal to the actual user / group name. NFS4 share domain is taken from /etc/idmapd.conf and falls back on `dnsdomainname`.
+        Translates a special principal to the actual user / group name. NFS4 share domain is taken from
+        /etc/idmapd.conf and falls back on `dnsdomainname`.
         Returns identity, domain and flags"""
         domain = get_nfs4_domain()
         stat_info = os.stat(filename)
@@ -191,7 +201,8 @@ class AccessControlEntity:
 
 
 def get_nfs4_domain():
-    domain = subprocess.run(['egrep', '-s', '^Domain', '/etc/idmapd.conf'], stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+    domain = subprocess.run(['egrep', '-s', '^Domain', '/etc/idmapd.conf'],
+                            stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
     try:
         domain = re.search('[a-z\\.\\-]+$', domain).group(0)
     except AttributeError:
