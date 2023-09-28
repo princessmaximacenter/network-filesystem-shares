@@ -75,6 +75,9 @@ def _cli_argument_parser():
                                     "to a share via htaccess. "
                                     "Default: 'Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,"
                                     "dc=prinsesmaximacentrum,dc=nl' where {} is replaced by the group")
+    create_parser.add_argument('-git', '--track-change-dir', required=False, 
+                               help="Local git directory that is used to track changes in shares",
+                               dest='track_change_dir')
 
     # Sub-parser for removing a share
     delete_parser = subparsers.add_parser('delete', aliases=['rm', 'remove', 'del'],
@@ -126,6 +129,9 @@ def _cli_argument_parser():
                                  "to a share via htaccess. "
                                  "Default: 'Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,"
                                  "dc=prinsesmaximacentrum,dc=nl' where {} is replaced by the group")
+    add_parser.add_argument('-git', '--track-change-dir', required=False, 
+                               help="Local git repository that is used to track changes in shares",
+                               dest='track_change_dir')
     return parser
 
 

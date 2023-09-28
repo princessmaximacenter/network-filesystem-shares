@@ -8,11 +8,11 @@ import os
 from . import htaccess
 from .share import Share
 from .acl import AccessControlList, AccessControlEntity
-
+from .track_changes import update_filelist,check_and_update_user_list
 
 def create(share_directory, domain, user_apache_directive="{}", group_apache_directive="{}",
            items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=True,
-           service_application_accounts=None):
+           service_application_accounts=None, track_change_dir=None):
     """
     Creates a share. The directory representing the share should be non-existent.
             For more information on input variables run ./share remove --help
@@ -48,12 +48,18 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
                                              managing_groups=managing_groups,
                                              domain=domain,
                                              manage_permissions=share.MANAGE_PERMISSION_UNLOCK)
-    share.add(items)
+    new_items=share.add(items)
     htaccess.create_at(share=share,
                        users=users + managing_users,
                        user_directive_template=user_apache_directive,
                        groups=groups + managing_groups,
                        group_directive_template=group_apache_directive)
+    
+    if track_change_dir is not None:
+        update_filelist(track_change_dir, share_directory, new_items)
+        check_and_update_user_list(track_change_dir, share_directory)
+        logging.info(f'Updated shares info in {track_change_dir}')
+
     logging.info("Finished creating share at %s" % share.directory)
     if lock:
         share.lock()
@@ -61,7 +67,7 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
 
 
 def add(share_directory, user_apache_directive="{}", group_apache_directive="{}", domain=None, items=None, users=None,
-        groups=None, managing_users=None, managing_groups=None, lock=False, service_application_accounts=None):
+        groups=None, managing_users=None, managing_groups=None, lock=False, service_application_accounts=None, track_change_dir=None):
     """
         Updates a share. The directory representing the share should exist.
             For more information on input variables run nfs4_share add --help
@@ -87,7 +93,10 @@ def add(share_directory, user_apache_directive="{}", group_apache_directive="{}"
     # Just to be sure,unlock the share (does no harm if no locked)
     share.unlock()
     if items:
-        share.add(items)
+        new_items=share.add(items)
+        if track_change_dir is not None:
+            update_filelist(track_change_dir, share_directory, new_items)
+            logging.info(f'Updated shares info in {track_change_dir}')
 
     # Add the users
     if users or groups:
@@ -105,6 +114,10 @@ def add(share_directory, user_apache_directive="{}", group_apache_directive="{}"
                                                  domain=domain,
                                                  manage_permissions=share.MANAGE_PERMISSION_UNLOCK)
         share.permissions = updated_acl
+
+        if track_change_dir is not None:
+            check_and_update_user_list(track_change_dir, share_directory)
+            logging.info(f'Updated shares info in {track_change_dir}')
 
     if lock:
         share.lock()

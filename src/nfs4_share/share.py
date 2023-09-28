@@ -47,9 +47,13 @@ class Share:
         logging.debug("Adding items to %s: %s" % (self.directory, items))
         files = [i for i in items if os.path.isfile(i)]
         directories = [i for i in items if os.path.isdir(i)]
+        # shared_items is used to get a final list of shared files
+        # will be used to track filelist changes
+        shared_items = items
         for file in files:
-            shared_file = os.path.join(self.directory, os.path.basename(file))
-            self._link_files(file, shared_file)
+            target_file = os.path.join(self.directory, os.path.basename(file))
+            # remove from shared items if file already exist in share
+            shared_items = self._link_files(file, target_file, shared_items)
         for directory in directories:
             try:
                 self._duplicate_as_linked_tree(directory)
@@ -58,8 +62,12 @@ class Share:
                 # It is already there, either by having been added before or within an update
                 self._unshare_linked_tree(e.filename)
                 self._duplicate_as_linked_tree(directory)
+                # remove source directory from new items, if they exist in the share
+                shared_items.remove(e.filename)
         for unhandled_item in set(items) - set(directories).union(set(files)):
+            shared_items.remove(unhandled_item)
             logging.error("Did not handle input item '%s'" % unhandled_item)
+        return shared_items
 
     def _duplicate_as_linked_tree(self, source_root):
         """
@@ -144,7 +152,7 @@ class Share:
         os.makedirs(directory)
         self.permissions.set(target=directory)
 
-    def _link_files(self, source, target):
+    def _link_files(self, source, target, shared_item_list):
         """
         Creates a hard link between two files and outputs to log
         """
@@ -156,8 +164,11 @@ class Share:
                   "Possible cause; source file need to be writable/appendable when fs.protect_hardlinks is enabled. " \
                   "Permissions: {}"
             logging.error(msg.format(e.filename, str(AccessControlList.from_file(source))))
+            shared_item_list.remove(e.filename)
         except FileExistsError as e:
-            logging.debug("File %s already exists!" % e.filename)
+            logging.debug("File %s already exists!" % e.filename)    
+            shared_item_list.remove(e.filename)
+        return shared_item_list
 
     def self_destruct(self, force_file_removal=False):
         """

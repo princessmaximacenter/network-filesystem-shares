@@ -48,5 +48,5 @@ setup(
     license="MIT",
     extras_require={'test': ['pytest', 'pycodestyle']},
     setup_requires=['wheel'],
-    install_requires=['wheel', 'parse']
+    install_requires=['wheel', 'parse', 'GitPython']
 )
