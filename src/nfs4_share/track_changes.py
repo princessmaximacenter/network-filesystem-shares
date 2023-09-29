@@ -89,6 +89,27 @@ def track_file_deletion(track_change_dir, share_directory, deleted_items):
     logging.info(commit_msg)
     stage_and_commit(track_change_dir, filelist_txt, commit_msg)
 
+def track_user_removal(track_change_dir, share_directory, deleted_users):
+    userlist_txt=Path(track_change_dir, f"{Path(share_directory).name}_users.txt")
+    with open(userlist_txt, 'r') as tc_file:
+        previous_htaccess=tc_file.readlines()
+        previous_htaccess=[l.strip() for l in previous_htaccess]
+    
+    # get a list of current user from git-tracked userlist
+    current_htaccess=[l for l in previous_htaccess if not re.search('|'.join(deleted_users), l)]
+
+    # remove deleted users from git-tracked userlist
+    if deleted_users:
+        removed_htaccess=set(previous_htaccess)-set(current_htaccess)
+        with open(userlist_txt, 'w') as tc_file:
+            for item in current_htaccess:
+                tc_file.write(item+'\n')
+        commit_msg=f'Removed {",".join(removed_htaccess)} from {Path(share_directory).name}'
+        stage_and_commit(track_change_dir, userlist_txt, commit_msg)
+        logging.info(commit_msg)
+    else:
+        logging.info(f'No user access changes in {Path(share_directory).name}')
+
 def stage_and_commit(track_change_dir, filename, commit_msg):
     """
     Function to stage and commit changes to list files

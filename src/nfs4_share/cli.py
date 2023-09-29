@@ -91,11 +91,20 @@ def _cli_argument_parser():
     delete_parser.add_argument('-git', '--track-change-dir', required=False, 
                             help="Local git repository that is used to track changes in shares",
                             dest='track_change_dir')
+    delete_parser.add_argument('-d', '--domain', required=False, dest='domain', default=default_domain,
+                               help="general domain used to build the user and group principles (NFSv4 ACLs) "
+                                    "if not provided it is looked up using command dnsdomainname")
     delete_parser.add_argument('-i', '--item', '--items', required=False,
                                nargs='*', metavar='ITEM', action= 'extend', 
                                default= [],
                                help= 'files to remove from share', 
                                dest= 'items')
+    delete_parser.add_argument('-u', '--user', '--users', action='extend', nargs="*", required=False, metavar='USER',
+                               dest='users',
+                               help='users to be removed from the share')
+    delete_parser.add_argument('-g', '--group', '--groups', action='extend', nargs="*", required=False, metavar='GROUP',
+                               dest='groups',
+                               help='groups to be removed from the share')
 
     # Sub-parser for adding things to a share
     add_parser = subparsers.add_parser('add',

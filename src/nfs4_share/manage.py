@@ -9,7 +9,7 @@ from pathlib import Path
 from . import htaccess
 from .share import Share
 from .acl import AccessControlList, AccessControlEntity
-from .track_changes import track_file_addition,track_user_addition,track_share_deletion,track_file_deletion
+from .track_changes import track_file_addition,track_user_addition,track_share_deletion,track_file_deletion,track_user_removal
 
 def create(share_directory, domain, user_apache_directive="{}", group_apache_directive="{}",
            items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=True,
@@ -125,7 +125,8 @@ def add(share_directory, user_apache_directive="{}", group_apache_directive="{}"
     return share
 
 
-def delete(share_directory, force=False, items=None, track_change_dir=None, lock=False):
+def delete(share_directory, domain,
+           force=False, items=None, users=None, groups=None,track_change_dir=None, lock=False):
     """
         Deletes a share. The directory representing the share should exist.
                  For more information on input variables run nfs4_share delete --help
@@ -133,19 +134,51 @@ def delete(share_directory, force=False, items=None, track_change_dir=None, lock
     share = unlock(share_directory)
     if items is None:
         items=[]
-    if len(items)==0:
+    if users is None:
+        users=[]
+    if groups is None:
+        groups=[]
+
+    if not users and not groups and not items:
         htaccess.remove_from(share, absent_ok=True)
         share.self_destruct(force_file_removal=force)
         logging.info("Removed share at %s" % share.directory)
         if track_change_dir is not None:
             track_share_deletion(track_change_dir, share_directory)
-    else:
+        return
+        
+    if items:
         # just to be sure that we remove file from share and not somewhere else
         items=[Path(share_directory, Path(item).name) for item in items]
         share.remove_items(items, force)
         track_file_deletion(track_change_dir, share_directory,items)
-        if lock:
-            share.lock()
+
+    if users or groups:
+        # update htaccess
+        logging.info(f"Will attempt to remove {','.join(groups+users)} from {share_directory}")
+        htaccess.remove_at(share=share,
+                           target_users=users,
+                           target_groups=groups)
+        acl = share.permissions
+        # only allow user/groups removal at the moment
+        acl_tobe_removed=generate_permissions(users=users,
+                                              groups=groups,
+                                              managing_groups=[],
+                                              managing_users=[],
+                                              domain=domain,
+                                              manage_permissions=share.MANAGE_PERMISSION_UNLOCK)
+        share.permissions = AccessControlList(set(acl)-set(acl_tobe_removed))
+        not_removed=[user.identity for user in list(set(acl_tobe_removed)-set(acl))]
+        logging.debug(f'users not removed: {not_removed}')
+        if not_removed:
+            for entry in not_removed:
+                logging.warning(f'{entry} ACL permission does not exist in {share_directory}')
+        removed_users=list(set(users+groups)-set(not_removed))
+        logging.info(f'Removed users: {removed_users}')
+        track_user_removal(track_change_dir, share_directory, removed_users)
+    if lock:
+        share.lock()
+    
 
 def unlock(share_directory):
     """
