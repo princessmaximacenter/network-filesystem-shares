@@ -81,13 +81,21 @@ def _cli_argument_parser():
 
     # Sub-parser for removing a share
     delete_parser = subparsers.add_parser('delete', aliases=['rm', 'remove', 'del'],
-                                          help='deletes a share directory (help: \'delete -h\')')
+                                          help='deletes files from a directory or a share directory (help: \'delete -h\')')
     delete_parser.set_defaults(func=manage.delete)
     for args in ['share_directory']:
         delete_parser.add_argument(*default_args[args][0], **default_args[args][1])
     delete_parser.add_argument('-f', '--force', action="store_true", default=False,
                                help="forces files to be un-shared even if they have only one hard link (i.e. delete "
                                     "files)")
+    delete_parser.add_argument('-git', '--track-change-dir', required=False, 
+                            help="Local git repository that is used to track changes in shares",
+                            dest='track_change_dir')
+    delete_parser.add_argument('-i', '--item', '--items', required=False,
+                               nargs='*', metavar='ITEM', action= 'extend', 
+                               default= [],
+                               help= 'files to remove from share', 
+                               dest= 'items')
 
     # Sub-parser for adding things to a share
     add_parser = subparsers.add_parser('add',

@@ -5,10 +5,11 @@ import pwd
 import grp
 import os
 
+from pathlib import Path
 from . import htaccess
 from .share import Share
 from .acl import AccessControlList, AccessControlEntity
-from .track_changes import update_filelist,check_and_update_user_list
+from .track_changes import track_file_addition,track_user_addition,track_share_deletion,track_file_deletion
 
 def create(share_directory, domain, user_apache_directive="{}", group_apache_directive="{}",
            items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=True,
@@ -56,8 +57,8 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
                        group_directive_template=group_apache_directive)
     
     if track_change_dir is not None:
-        update_filelist(track_change_dir, share_directory, new_items)
-        check_and_update_user_list(track_change_dir, share_directory)
+        track_file_addition(track_change_dir, share_directory, new_items)
+        track_user_addition(track_change_dir, share_directory)
         logging.info(f'Updated shares info in {track_change_dir}')
 
     logging.info("Finished creating share at %s" % share.directory)
@@ -95,7 +96,7 @@ def add(share_directory, user_apache_directive="{}", group_apache_directive="{}"
     if items:
         new_items=share.add(items)
         if track_change_dir is not None:
-            update_filelist(track_change_dir, share_directory, new_items)
+            track_file_addition(track_change_dir, share_directory, new_items)
             logging.info(f'Updated shares info in {track_change_dir}')
 
     # Add the users
@@ -116,7 +117,7 @@ def add(share_directory, user_apache_directive="{}", group_apache_directive="{}"
         share.permissions = updated_acl
 
         if track_change_dir is not None:
-            check_and_update_user_list(track_change_dir, share_directory)
+            track_user_addition(track_change_dir, share_directory)
             logging.info(f'Updated shares info in {track_change_dir}')
 
     if lock:
@@ -124,16 +125,27 @@ def add(share_directory, user_apache_directive="{}", group_apache_directive="{}"
     return share
 
 
-def delete(share_directory, force=False):
+def delete(share_directory, force=False, items=None, track_change_dir=None, lock=False):
     """
         Deletes a share. The directory representing the share should exist.
                  For more information on input variables run nfs4_share delete --help
     """
     share = unlock(share_directory)
-    htaccess.remove_from(share, absent_ok=True)
-    share.self_destruct(force_file_removal=force)
-    logging.info("Removed share at %s" % share.directory)
-
+    if items is None:
+        items=[]
+    if len(items)==0:
+        htaccess.remove_from(share, absent_ok=True)
+        share.self_destruct(force_file_removal=force)
+        logging.info("Removed share at %s" % share.directory)
+        if track_change_dir is not None:
+            track_share_deletion(track_change_dir, share_directory)
+    else:
+        # just to be sure that we remove file from share and not somewhere else
+        items=[Path(share_directory, Path(item).name) for item in items]
+        share.remove_items(items, force)
+        track_file_deletion(track_change_dir, share_directory,items)
+        if lock:
+            share.lock()
 
 def unlock(share_directory):
     """

@@ -175,6 +175,13 @@ class Share:
         will have the share remove itself
         """
         self._unshare_linked_tree(directory=self.directory, force_file_removal=force_file_removal)
+    
+    def remove_items(self, items, force_file_removal=False):
+        """
+        Remove items from share
+        """
+        for item in items:
+            self._unshare_file(item, force=force_file_removal)
 
     @staticmethod
     def _unshare_dir(target):
