@@ -30,7 +30,7 @@ def track_user_addition(track_change_dir, share_directory):
         with open(userlist_txt, 'a') as tc_file:
             for item in new_users:
                 tc_file.write(item+'\n')
-        commit_msg=f'[USER-LIST-CHANGED] Added {",".join(new_users)} to {Path(share_directory).name}'
+        commit_msg=f'[{Path(share_directory).name}][USER][ADDED]{",".join(new_users)}'
         stage_and_commit(track_change_dir, userlist_txt, commit_msg)
         logging.info(commit_msg)
     else:
@@ -49,7 +49,7 @@ def track_file_addition(track_change_dir, share_directory, new_items):
                 tc_file.write(basename_item+'\n')
 
         # Note changes in commit message
-        commit_msg=f'[ITEM-LIST-CHANGED] Added {str(len(new_items))} item(s) to {Path(share_directory).name}'
+        commit_msg=f'[{Path(share_directory).name}][ITEM][ADDED]{str(len(new_items))} item(s)'
         stage_and_commit(track_change_dir,filelist_txt,commit_msg)
         logging.info(commit_msg)
     else:
@@ -63,7 +63,7 @@ def track_share_deletion(track_change_dir, share_directory):
     for f in tc_files:
         if os.path.exists(Path(track_change_dir,f)):
             os.remove(Path(track_change_dir,f))
-    commit_msg=f'[SHARE] {Path(share_directory).name} was Removed'
+    commit_msg=f'[{Path(share_directory).name}][SHARE][REMOVED]'
     repo.index.commit(commit_msg)
     logging.info(commit_msg)
 
@@ -85,7 +85,7 @@ def track_file_deletion(track_change_dir, share_directory, deleted_items):
             tc_file.write(basename_item+'\n')
 
     # keep track of changes with git
-    commit_msg=f'[ITEM-LIST-CHANGED] Removed {str(len(deleted_items))} item(s) from {Path(share_directory).name}'
+    commit_msg=f'[{Path(share_directory).name}][ITEM][REMOVED]{str(len(deleted_items))} item(s)'
     logging.info(commit_msg)
     stage_and_commit(track_change_dir, filelist_txt, commit_msg)
 
@@ -104,7 +104,7 @@ def track_user_removal(track_change_dir, share_directory, deleted_users):
         with open(userlist_txt, 'w') as tc_file:
             for item in current_htaccess:
                 tc_file.write(item+'\n')
-        commit_msg=f'[USER-LIST-CHANGED] Removed {",".join(removed_htaccess)} from {Path(share_directory).name}'
+        commit_msg=f'[{Path(share_directory).name}][USER][REMOVED]{",".join(removed_htaccess)}'
         stage_and_commit(track_change_dir, userlist_txt, commit_msg)
         logging.info(commit_msg)
     else:
