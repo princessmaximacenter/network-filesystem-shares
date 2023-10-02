@@ -23,12 +23,7 @@ def _cli_argument_parser():
         "share_directory": (
             ["share_directory"],
             {'metavar': "SHARE_DIRECTORY", 'help': "The path to the directory representing the share"}
-        ),
-        "items": (
-            ["-i", "--item", "--items"],
-            {"nargs": "*", "metavar": "ITEM", "action": "extend", "default": [],
-             "help": "one or paths of files or directories to share", "dest": 'items'}
-        ),
+        )
     }
     parser.add_argument("-v", "--verbose", action="count", default=0,
                         help="increases output verbosity (DEBUG is \'-vv\')", dest="verbosity")
@@ -42,115 +37,97 @@ def _cli_argument_parser():
     create_parser.set_defaults(func=manage.create)
     for arg in default_args:  # Add the default args (share and item)
         create_parser.add_argument(*default_args[arg][0], **default_args[arg][1])
-    create_parser.add_argument('-u', '--user', '--users', action='extend', nargs="*", required=False, metavar='USER',
-                               dest='users',
-                               help='give access to user (can be defined multiple times)')
-    create_parser.add_argument('-g', '--group', '--groups', action='extend', nargs="*", required=False, metavar='GROUP',
-                               dest='groups',
-                               help='give access to group (can be defined multiple times)')
-    create_parser.add_argument('-mu', '--managing_user', '--managing_users', action='extend', nargs="*", required=False,
-                               metavar='USER',
-                               dest='managing_users',
-                               help='give permission to user to manage share (can be defined multiple times)')
-    create_parser.add_argument('-mg', '--managing_group', '--managing_groups', action='extend', nargs="*",
-                               required=False,
-                               metavar='GROUP', dest='managing_groups',
-                               help='give permission to group to manage share (can be defined multiple times)')
-    create_parser.add_argument('-d', '--domain', required=False, dest='domain', default=default_domain,
-                               help="general domain used to build the user and group principles (NFSv4 ACLs) "
-                                    "if not provided it is looked up using command dnsdomainname")
-    create_parser.add_argument('-saa', '--service-application-accounts ', action='extend', nargs="*", required=False,
-                               dest='service_application_accounts',
-                               help="service application accounts under which the services (e.g. HTTP) are running "
-                                    "that should have access to the share (NFSv4 ACLs)")
-    create_parser.add_argument('-uad', '--user-apache-directive', required=False,
-                               default="Require ldap-user {}",
-                               help="This directive template specifies an user who is allowed access "
-                                    "to a share via htaccess. "
-                                    "Default: 'Require ldap-user {}' where {} is replaced by the user")
-    create_parser.add_argument('-gad', '--group-apache-directive', required=False,
-                               default="Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,"
-                                       "dc=prinsesmaximacentrum,dc=nl",
-                               help="This directive template specifies an group whose members are allowed access "
-                                    "to a share via htaccess. "
-                                    "Default: 'Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,"
-                                    "dc=prinsesmaximacentrum,dc=nl' where {} is replaced by the group")
-    create_parser.add_argument('-git', '--track-change-dir', required=False, 
-                               help="Local git directory that is used to track changes in shares",
-                               dest='track_change_dir')
-
-    # Sub-parser for removing a share
-    delete_parser = subparsers.add_parser('delete', aliases=['rm', 'remove', 'del'],
-                                          help='deletes files from a directory or a share directory (help: \'delete -h\')')
-    delete_parser.set_defaults(func=manage.delete)
-    for args in ['share_directory']:
-        delete_parser.add_argument(*default_args[args][0], **default_args[args][1])
-    delete_parser.add_argument('-f', '--force', action="store_true", default=False,
-                               help="forces files to be un-shared even if they have only one hard link (i.e. delete "
-                                    "files)")
-    delete_parser.add_argument('-git', '--track-change-dir', required=False, 
-                            help="Local git repository that is used to track changes in shares",
-                            dest='track_change_dir')
-    delete_parser.add_argument('-d', '--domain', required=False, dest='domain', default=default_domain,
-                               help="general domain used to build the user and group principles (NFSv4 ACLs) "
-                                    "if not provided it is looked up using command dnsdomainname")
-    delete_parser.add_argument('-i', '--item', '--items', required=False,
-                               nargs='*', metavar='ITEM', action= 'extend', 
-                               default= [],
-                               help= 'files to remove from share', 
-                               dest= 'items')
-    delete_parser.add_argument('-u', '--user', '--users', action='extend', nargs="*", required=False, metavar='USER',
-                               dest='users',
-                               help='users to be removed from the share')
-    delete_parser.add_argument('-g', '--group', '--groups', action='extend', nargs="*", required=False, metavar='GROUP',
-                               dest='groups',
-                               help='groups to be removed from the share')
+    add_and_create_subparsers_arguments(create_parser, default_domain)
 
     # Sub-parser for adding things to a share
     add_parser = subparsers.add_parser('add',
                                        help='adds items, users or groups a share directory (help: \'add -h\')')
     add_parser.set_defaults(func=manage.add)
     add_parser.register('action', 'extend', ExtendAction)
-    for args in ['share_directory', 'items']:
+    for args in ['share_directory']:
         add_parser.add_argument(*default_args[args][0], **default_args[args][1])
-    add_parser.add_argument('-u', '--user', '--users', action='extend', nargs="*", required=False, metavar='USER',
-                            dest='users',
-                            help='give access to user (can be defined multiple times)')
-    add_parser.add_argument('-g', '--group', '--groups', action='extend', nargs="*", required=False, metavar='GROUP',
-                            dest='groups',
-                            help='give access to group (can be defined multiple times)')
-    add_parser.add_argument('-mu', '--managing_user', '--managing_users', action='extend', nargs="*", required=False,
-                            metavar='USER',
-                            dest='managing_users',
-                            help='give permission to user to manage share (can be defined multiple times)')
-    add_parser.add_argument('-mg', '--managing_group', '--managing_groups', action='extend', nargs="*", required=False,
-                            metavar='GROUP',
-                            dest='managing_groups',
-                            help='give permission to group to manage share (can be defined multiple times)')
-    add_parser.add_argument('-d', '--domain', required=False, dest='domain', default=default_domain,
-                            help="general domain used to build the user and group principles (NFSv4 ACLs)"
-                                 "if not provided it is looked up using command dnsdomainname")
-    add_parser.add_argument('-saa', '--service-application-accounts ', action='extend', nargs="*", required=False,
-                            dest='service_application_accounts',
-                            help="service application accounts under which the services (e.g. HTTP) are running that "
-                                 "should have access to the share (NFSv4 ACLs)")
-    add_parser.add_argument('-uad', '--user-apache-directive', required=False,
-                            default="Require ldap-user {}",
-                            help="This directive template specifies an user who is allowed access "
-                                 "to a share via htaccess. "
-                                 "Default: 'Require ldap-user {}' where {} is replaced by the user")
-    add_parser.add_argument('-gad', '--group-apache-directive', required=False,
-                            default="Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,"
-                                    "dc=prinsesmaximacentrum,dc=nl",
-                            help="This directive template specifies an group whose members are allowed access "
-                                 "to a share via htaccess. "
-                                 "Default: 'Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,"
-                                 "dc=prinsesmaximacentrum,dc=nl' where {} is replaced by the group")
-    add_parser.add_argument('-git', '--track-change-dir', required=False, 
-                               help="Local git repository that is used to track changes in shares",
-                               dest='track_change_dir')
+    add_and_create_subparsers_arguments(add_parser, default_domain)
+
+    # Sub-parser for removing items from a share or for removing share completely
+    delete_parser = subparsers.add_parser('delete', aliases=['rm', 'remove', 'del'],
+                                          help='deletes files from a directory or a share directory (help: \'delete -h\')')
+    delete_parser.set_defaults(func=manage.delete)
+    for args in ['share_directory']:
+        delete_parser.add_argument(*default_args[args][0], **default_args[args][1])
+    delete_subparser_arguments(delete_parser, default_domain)
+    
     return parser
 
+def delete_subparser_arguments(subparser, default_domain):
+    """
+    Add python args in subparser for removing files/users/shares
+    """
+    subparser.add_argument('-i', '--item', '--items', required=False,
+                           nargs='*', metavar='ITEM', action= 'extend', 
+                           default= [],
+                           help= 'files to remove from share', 
+                           dest= 'items')
+    subparser.add_argument('-f', '--force', action="store_true", default=False,
+                           help="forces files to be un-shared even if they have only one hard link (i.e. delete "
+                               "files)")
+    subparser.add_argument('-git', '--track-change-dir', required=False, 
+                           help="Local git repository that is used to track changes in shares",
+                           dest='track_change_dir')
+    subparser.add_argument('-d', '--domain', required=False, dest='domain', default=default_domain,
+                           help="general domain used to build the user and group principles (NFSv4 ACLs) "
+                                "if not provided it is looked up using command dnsdomainname")
+    subparser.add_argument('-u', '--user', '--users', action='extend', nargs="*", required=False, metavar='USER',
+                           dest='users',
+                           help='users to be removed from the share')
+    subparser.add_argument('-g', '--group', '--groups', action='extend', nargs="*", required=False, metavar='GROUP',
+                           dest='groups',
+                           help='groups to be removed from the share')
+
+def add_and_create_subparsers_arguments(subparser, default_domain):
+    """
+    Add python args in subparser for adding files/users/shares
+    """
+    subparser.add_argument('-i', '--item', '--items', required=False,
+                           nargs='*', metavar='ITEM', action= 'extend', 
+                           default= [],
+                           help= 'one or paths of files or directories to share', 
+                           dest= 'items')
+    subparser.add_argument('-u', '--user', '--users', action='extend', nargs="*", required=False, metavar='USER',
+                           dest='users',
+                           help='give access to user (can be defined multiple times)')
+    subparser.add_argument('-g', '--group', '--groups', action='extend', nargs="*", required=False, metavar='GROUP',
+                           dest='groups',
+                           help='give access to group (can be defined multiple times)')
+    subparser.add_argument('-mu', '--managing_user', '--managing_users', action='extend', nargs="*", required=False,
+                           metavar='USER',
+                           dest='managing_users',
+                           help='give permission to user to manage share (can be defined multiple times)')
+    subparser.add_argument('-mg', '--managing_group', '--managing_groups', action='extend', nargs="*",
+                           required=False,
+                           metavar='GROUP', dest='managing_groups',
+                           help='give permission to group to manage share (can be defined multiple times)')
+    subparser.add_argument('-d', '--domain', required=False, dest='domain', default=default_domain,
+                           help="general domain used to build the user and group principles (NFSv4 ACLs) "
+                               "if not provided it is looked up using command dnsdomainname")
+    subparser.add_argument('-saa', '--service-application-accounts ', action='extend', nargs="*", required=False,
+                           dest='service_application_accounts',
+                           help="service application accounts under which the services (e.g. HTTP) are running "
+                                "that should have access to the share (NFSv4 ACLs)")
+    subparser.add_argument('-uad', '--user-apache-directive', required=False,
+                           default="Require ldap-user {}",
+                           help="This directive template specifies an user who is allowed access "
+                                "to a share via htaccess. "
+                                "Default: 'Require ldap-user {}' where {} is replaced by the user")
+    subparser.add_argument('-gad', '--group-apache-directive', required=False,
+                           default="Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,"
+                                   "dc=prinsesmaximacentrum,dc=nl",
+                           help="This directive template specifies an group whose members are allowed access "
+                                "to a share via htaccess. "
+                                "Default: 'Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,"
+                                "dc=prinsesmaximacentrum,dc=nl' where {} is replaced by the group")
+    subparser.add_argument('-git', '--track-change-dir', required=False, 
+                           help="Local git directory that is used to track changes in shares",
+                           dest='track_change_dir')
 
 class ExtendAction(argparse.Action):
 
