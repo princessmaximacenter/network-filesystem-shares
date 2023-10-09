@@ -6,6 +6,10 @@ import sys
 import subprocess
 from . import manage
 from . import acl
+from pathlib import Path
+
+def path_object(input):
+    return Path(input)
 
 
 def _cli_argument_parser():
@@ -72,7 +76,8 @@ def delete_subparser_arguments(subparser, default_domain):
                                "files)")
     subparser.add_argument('-git', '--track-change-dir', required=False, 
                            help="Local git repository that is used to track changes in shares",
-                           dest='track_change_dir')
+                           dest='track_change_dir',
+                           type=path_object)
     subparser.add_argument('-d', '--domain', required=False, dest='domain', default=default_domain,
                            help="general domain used to build the user and group principles (NFSv4 ACLs) "
                                 "if not provided it is looked up using command dnsdomainname")
@@ -127,7 +132,8 @@ def add_and_create_subparsers_arguments(subparser, default_domain):
                                 "dc=prinsesmaximacentrum,dc=nl' where {} is replaced by the group")
     subparser.add_argument('-git', '--track-change-dir', required=False, 
                            help="Local git directory that is used to track changes in shares",
-                           dest='track_change_dir')
+                           dest='track_change_dir',
+                           type=path_object)
 
 class ExtendAction(argparse.Action):
 
