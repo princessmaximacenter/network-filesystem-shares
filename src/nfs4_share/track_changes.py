@@ -1,8 +1,61 @@
 from git import Repo
+from git.exc import InvalidGitRepositoryError
 import re
 from pathlib import Path
 import logging
 import os
+
+def initialize_track_changes_dir(track_change_dir:Path):
+    """
+    Run git init in a directory for tracking changes if it's not done already
+    """
+    if not track_change_dir.exists():
+        logging.info(f'Creating track changes dir: {track_change_dir}')
+        os.mkdir(track_change_dir)
+    try:
+        repo=Repo(track_change_dir)
+        logging.debug(f'Tracking changes in {track_change_dir}')
+    except InvalidGitRepositoryError:
+        logging.info(f'Running git init in {track_change_dir}')
+        repo=Repo.init(track_change_dir)
+    return repo
+
+def initialize_file_list(track_change_dir, share_directory):
+    """
+    Create a txt file to track item changes in a share
+    """
+    filelist_txt=Path(track_change_dir, f"{Path(share_directory).name}_files.txt")
+    if not filelist_txt.exists():
+        filelist=os.listdir(share_directory)
+        filelist=[item for item in filelist if item != ".htaccess.files.bioinf"]
+        with open(filelist_txt, 'w') as tc_file:
+            for item in filelist:
+                tc_file.write(item+'\n')
+        commit_msg=f'[{Path(share_directory).name}]File change tracking initialized'
+        logging.info(commit_msg)
+        stage_and_commit(track_change_dir, filelist_txt, commit_msg)
+
+def initialize_user_list(track_change_dir, share_directory):
+    """
+    Create a txt file to track user changes in a share
+    """
+    userlist_txt=Path(track_change_dir, f"{Path(share_directory).name}_users.txt")
+    if not userlist_txt.exists():
+        try:
+            with open(Path(share_directory,'.htaccess.files.bioinf'), 'r') as htaccess_file:
+                lines=htaccess_file.readlines()
+                htaccess_list=[re.sub('Require.*(?=ldap)','',l) for l in lines if 'ldap' in l]
+                htaccess_list=[l.strip() for l in htaccess_list]
+                htaccess_list.sort()
+        except FileNotFoundError:
+            htaccess_list=[]
+        with open(userlist_txt, 'w') as tc_file:
+            for htaccess in htaccess_list:
+                tc_file.write(htaccess+'\n')
+        commit_msg=f'[{Path(share_directory).name}]User change tracking initialized'
+        logging.info(commit_msg)
+        stage_and_commit(track_change_dir, userlist_txt, commit_msg)
+
 
 def track_user_addition(track_change_dir, share_directory):
     """
@@ -114,7 +167,7 @@ def stage_and_commit(track_change_dir, filename, commit_msg):
     """
     Function to stage and commit changes to list files
     """
-    repo = Repo(track_change_dir)
+    repo = initialize_track_changes_dir(track_change_dir)
     repo.index.add(filename)
     repo.index.commit(commit_msg)
     

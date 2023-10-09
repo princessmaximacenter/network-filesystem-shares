@@ -9,7 +9,7 @@ from pathlib import Path
 from . import htaccess
 from .share import Share
 from .acl import AccessControlList, AccessControlEntity
-from .track_changes import track_file_addition,track_user_addition,track_share_deletion,track_file_deletion,track_user_removal
+from . import track_changes
 
 def create(share_directory, domain, user_apache_directive="{}", group_apache_directive="{}",
            items=None, users=None, groups=None, managing_users=None, managing_groups=None, lock=True,
@@ -40,6 +40,9 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
     ensure_items_exist(items)
     try:
         share = Share(share_directory)
+        if track_change_dir is not None:
+            track_changes.initialize_file_list(track_change_dir, share_directory)
+            track_changes.initialize_user_list(track_change_dir, share_directory)
     except FileExistsError as e:
         logging.exception('Share directory %s already exists!' % share_directory)  # Stack traces by default
         raise e
@@ -57,8 +60,8 @@ def create(share_directory, domain, user_apache_directive="{}", group_apache_dir
                        group_directive_template=group_apache_directive)
     
     if track_change_dir is not None:
-        track_file_addition(track_change_dir, share_directory, new_items)
-        track_user_addition(track_change_dir, share_directory)
+        track_changes.track_file_addition(track_change_dir, share_directory, new_items)
+        track_changes.track_user_addition(track_change_dir, share_directory)
         logging.info(f'Updated shares info in {track_change_dir}')
 
     logging.info("Finished creating share at %s" % share.directory)
@@ -90,13 +93,18 @@ def add(share_directory, user_apache_directive="{}", group_apache_directive="{}"
     ensure_groups_exist(groups)
     ensure_items_exist(items)
     share = Share(share_directory, exist_ok=True)
+    
+    # create an initial file list for tracking changes if the list is not in track change dir yet
+    if track_change_dir is not None:
+        track_changes.initialize_file_list(track_change_dir, share_directory)
+        track_changes.initialize_user_list(track_change_dir, share_directory)
 
     # Just to be sure,unlock the share (does no harm if no locked)
     share.unlock()
     if items:
         new_items=share.add(items)
         if track_change_dir is not None:
-            track_file_addition(track_change_dir, share_directory, new_items)
+            track_changes.track_file_addition(track_change_dir, share_directory, new_items)
             logging.info(f'Updated shares info in {track_change_dir}')
 
     # Add the users
@@ -117,7 +125,7 @@ def add(share_directory, user_apache_directive="{}", group_apache_directive="{}"
         share.permissions = updated_acl
 
         if track_change_dir is not None:
-            track_user_addition(track_change_dir, share_directory)
+            track_changes.track_user_addition(track_change_dir, share_directory)
             logging.info(f'Updated shares info in {track_change_dir}')
 
     if lock:
@@ -132,6 +140,10 @@ def delete(share_directory, domain,
                  For more information on input variables run nfs4_share delete --help
     """
     share = unlock(share_directory)
+    # create an initial file list for tracking changes if the list is not in track change dir yet
+    if track_change_dir is not None:
+        track_changes.initialize_file_list(track_change_dir, share_directory)
+        track_changes.initialize_user_list(track_change_dir, share_directory)
     if items is None:
         items=[]
     if users is None:
@@ -144,14 +156,15 @@ def delete(share_directory, domain,
         share.self_destruct(force_file_removal=force)
         logging.info("Removed share at %s" % share.directory)
         if track_change_dir is not None:
-            track_share_deletion(track_change_dir, share_directory)
+            track_changes.track_share_deletion(track_change_dir, share_directory)
         return
         
     if items:
         # just to be sure that we remove file from share and not somewhere else
         items=[Path(share_directory, Path(item).name) for item in items]
         share.remove_items(items, force)
-        track_file_deletion(track_change_dir, share_directory,items)
+        if track_change_dir is not None:
+            track_changes.track_file_deletion(track_change_dir, share_directory,items)
 
     if users or groups:
         # update htaccess
@@ -175,7 +188,8 @@ def delete(share_directory, domain,
                 logging.warning(f'{entry} ACL permission does not exist in {share_directory}')
         removed_users=list(set(users+groups)-set(not_removed))
         logging.info(f'Removed users: {removed_users}')
-        track_user_removal(track_change_dir, share_directory, removed_users)
+        if track_change_dir is not None:
+            track_changes.track_user_removal(track_change_dir, share_directory, removed_users)
     if lock:
         share.lock()
     
