@@ -103,6 +103,11 @@ is not a hard-link to `/raw_data/sample1`, but a remake. The directories share t
 inode number and associated ACList. Within the `foobar` share, the ACList of directory `sample1`  only has the ACEntries 
 required to have bob and alice read and index files.
 
+### Tracking changes
+
+Changes to a share is tracked with a local git repository. You can use
+`-git {realpath of the local git}` to keep track of changes in the share.
+
 ## Unit tests
 If the source code is located on an NFSv4 mount with ACLs enabled you can run unit tests as follows:
         

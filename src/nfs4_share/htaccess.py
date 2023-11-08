@@ -4,6 +4,7 @@ import logging
 import warnings
 import parse
 from .share import Share
+import re
 
 
 def create_at(share, users, user_directive_template, groups, group_directive_template,
@@ -50,6 +51,33 @@ def append_at(share: Share, users: list, user_directive_template: str, groups: l
     # Recreate htaccess file
     # list(set()) just to make sure the list is unique to avoid duplications
     create_at(share, list(set(users)), user_directive_template, list(set(groups)), group_directive_template, filename)
+
+def remove_at(share: Share, target_users: list, target_groups: list,
+              filename: str = '.htaccess.files.bioinf'):
+    """
+    Creates a new .htaccess file containing the existing users/groups minus target_users/target_groups.
+    WARNING: the directive_template has to be the same as the one used during creation otherwise you might lose
+    permissions for some users/groups
+    """
+    # Try to extract existing htaccess users and groups
+    try:
+        # Create path to htaccess file
+        htaccess_file_path = os.path.join(share.directory, filename)
+        # Try to open it
+        with open(htaccess_file_path, 'r') as htaccess_file:
+            htaccess_lines = htaccess_file.readlines()
+        # Remove unwanted characters
+        htaccess_lines = [line.strip() for line in htaccess_lines]
+        # Remove users/groups
+        htaccess_lines = [line for line in htaccess_lines if not re.search('|'.join(target_groups+target_users), line)]
+
+        with open(htaccess_file_path, 'w') as f:
+            for line in htaccess_lines:
+                f.write("%s\n" % line)
+        share.permissions.set(htaccess_file_path)
+        logging.debug("Placed updated htaccess file at %s" % (htaccess_file_path))
+    except FileNotFoundError:
+        warnings.warn(f"No file found called {filename}")
 
 
 def extract_targets(lines: list, format_string: str):
