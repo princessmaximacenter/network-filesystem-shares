@@ -22,5 +22,5 @@ def test_lock_on_single_file(calling_prim_group, source_dir, shares_dir, variabl
     assert os.path.exists(j(share.directory, "file"))
 
     # Try deleting it via the share_dir stuff
-    delete(share_dir)
+    delete(share_dir, domain=variables["domain_name"])
     assert not os.path.exists(j(share.directory, "file"))

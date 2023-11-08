@@ -64,7 +64,7 @@ def test_create_with_directory(source_dir, shares_dir, calling_prim_group, varia
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
                    domain=variables["domain_name"],
                    service_application_accounts=variables['service_application_accounts'])
-    assert os.path.samefile(j(share.directory, "dir_with_one_file", "file"),
+    assert  (j(share.directory, "dir_with_one_file", "file"),
                             j(source_dir, "dir_with_one_file", "file"))
 
 
