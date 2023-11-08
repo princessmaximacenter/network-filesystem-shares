@@ -149,7 +149,7 @@ def track_user_removal(track_change_dir, share_directory, deleted_users):
         previous_htaccess=[l.strip() for l in previous_htaccess]
     
     # get a list of current user from git-tracked userlist
-    current_htaccess=[l for l in previous_htaccess if not re.search('|'.join(deleted_users), l)]
+    current_htaccess=[l for l in previous_htaccess if not re.search(rf'\b({"|".join(deleted_users)})\b', l)]
 
     # remove deleted users from git-tracked userlist
     if deleted_users:
