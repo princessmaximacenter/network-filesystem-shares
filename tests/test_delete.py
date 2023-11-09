@@ -6,18 +6,6 @@ import pytest
 from os.path import join as j
 from .utils import fabricate_a_source
 
-@pytest.fixture(scope='function')
-def single_file_share(source_dir, shares_dir, calling_user, calling_prim_group, variables):
-    from nfs4_share.manage import create
-    items = fabricate_a_source(source_dir, [
-        "file"
-    ])
-    share = create(shares_dir.join('share'), items=items, users=[calling_user], managing_groups=[calling_prim_group],
-                   user_apache_directive=variables["user_directive"], group_apache_directive=variables["group_directive"],
-                   domain=variables["domain_name"],
-                   service_application_accounts=variables['service_application_accounts'])
-    return share
-
 def test_empty_share_removal(shares_dir, calling_prim_group, variables):
     from nfs4_share.manage import create, delete
     share = create(shares_dir.join('share'), managing_groups=[calling_prim_group],
@@ -243,6 +231,6 @@ def test_remove_multiple_items(source_dir, shares_dir, calling_prim_group, varia
                    service_application_accounts=variables['service_application_accounts'])
     
     expected_items_after_deletion = list(set(os.listdir(share.directory)) - set(['file', 'file1']))
-    delete(share.directory, domain=variables["domain_name"], items=["file"])
+    delete(share.directory, domain=variables["domain_name"], items=["file", "file1"])
     items_after_deletion = os.listdir(share.directory)
     assert sorted(items_after_deletion) == sorted(expected_items_after_deletion)
