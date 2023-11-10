@@ -11,7 +11,7 @@ def test_empty_share_removal(shares_dir, calling_prim_group, variables):
     share = create(shares_dir.join('share'), managing_groups=[calling_prim_group],
                    domain=variables["domain_name"])
     assert os.path.exists(share.directory)
-    delete(share.directory, domain=variables["domain_name"])
+    delete(share.directory)
     assert not os.path.exists(share.directory)
 
 
@@ -23,7 +23,7 @@ def test_file_share_removal(source_dir, shares_dir, calling_prim_group, variable
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
                    domain=variables["domain_name"])
     assert os.path.exists(j(share.directory, "file"))
-    delete(share.directory, domain=variables["domain_name"])
+    delete(share.directory)
     assert not os.path.exists(j(share.directory, "file"))
 
 
@@ -36,7 +36,7 @@ def test_dir_share_removal(source_dir, shares_dir, calling_prim_group, variables
     share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
                    domain=variables["domain_name"])
     assert os.path.exists(j(share.directory, "dir"))
-    delete(share.directory, domain=variables["domain_name"])
+    delete(share.directory)
     assert not os.path.exists(j(share.directory, "dir"))
 
 
@@ -74,7 +74,7 @@ def test_multiple_shares_on_single_file_with_removal(source_dir, shares_dir, cal
                     domain=variables["domain_name"], lock=False)
     share1_2_3_nfs4_acl = nfs4_acl.AccessControlList.from_file(items[0])
     try:
-        delete(share3.directory, domain=variables["domain_name"])
+        delete(share3.directory)
         share1_2_3_min_3_acl = nfs4_acl.AccessControlList.from_file(items[0])
         assert share1_2_nfs4_acl == share1_2_3_min_3_acl
     except AssertionError as e:
@@ -83,7 +83,7 @@ def test_multiple_shares_on_single_file_with_removal(source_dir, shares_dir, cal
         print("share1_2_3_min_3_acl:\t%s" % share1_2_3_min_3_acl)
         raise e
     try:
-        delete(share2.directory, domain=variables["domain_name"])
+        delete(share2.directory)
         share1_2_3_min_3_2_acl = nfs4_acl.AccessControlList.from_file(items[0])
         assert share1_nfs4_acl == share1_2_3_min_3_2_acl
     except AssertionError as e:
@@ -104,7 +104,7 @@ def test_removal_of_file_permission(source_dir, shares_dir, calling_user, callin
                    domain=variables["domain_name"])
 
     with_nfs4_acl = nfs4_acl.AccessControlList.from_file(items[0])
-    delete(share.directory, domain=variables["domain_name"])
+    delete(share.directory)
     after_nfs4_acl = nfs4_acl.AccessControlList.from_file(items[0])
     try:
         assert before_nfs4_acl == after_nfs4_acl
@@ -131,7 +131,7 @@ def test_prevention_perm_removal_of_file(source_dir, shares_dir, calling_user, c
     logging.disable(logging.ERROR)  # to hide the ERROR being logged on the next level
 
     with pytest.raises(FileNotFoundError):
-        delete(share.directory, domain=variables["domain_name"])
+        delete(share.directory)
 
     logging.disable(logging.NOTSET)  # re-enable full logging
 
@@ -139,7 +139,7 @@ def test_prevention_perm_removal_of_file(source_dir, shares_dir, calling_user, c
     assert os.path.exists(j(share.directory, 'file'))
 
     # Retry with force applied
-    delete(share.directory, force=True, domain=variables["domain_name"])
+    delete(share.directory, force=True)
 
     assert not os.path.exists(j(share.directory, 'file'))
 
@@ -155,7 +155,7 @@ def test_removing_file_instead_of_share(source_dir, shares_dir, calling_user, ca
 
     from nfs4_share.share import IllegalShareSetupError
     with pytest.raises(IllegalShareSetupError):
-        delete(j(share.directory, 'file'), domain=variables["domain_name"])
+        delete(j(share.directory, 'file'))
 
     assert os.path.exists(j(share.directory, 'file'))
 
@@ -219,7 +219,7 @@ def test_remove_one_item(source_dir, shares_dir, calling_prim_group, variables):
     
     expected_items_after_deletion = os.listdir(share.directory)
     expected_items_after_deletion.remove('file')
-    delete(share.directory, domain=variables["domain_name"], items=["file"])
+    delete(share.directory, items=["file"])
     items_after_deletion = os.listdir(share.directory)
     assert sorted(items_after_deletion) == sorted(expected_items_after_deletion)
 
@@ -231,6 +231,6 @@ def test_remove_multiple_items(source_dir, shares_dir, calling_prim_group, varia
                    service_application_accounts=variables['service_application_accounts'])
     
     expected_items_after_deletion = list(set(os.listdir(share.directory)) - set(['file', 'file1']))
-    delete(share.directory, domain=variables["domain_name"], items=["file", "file1"])
+    delete(share.directory, items=["file", "file1"])
     items_after_deletion = os.listdir(share.directory)
     assert sorted(items_after_deletion) == sorted(expected_items_after_deletion)
