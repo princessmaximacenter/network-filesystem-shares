@@ -83,7 +83,7 @@ def track_user_addition(track_change_dir, share_directory):
         with open(userlist_txt, 'a') as tc_file:
             for item in new_users:
                 tc_file.write(item+'\n')
-        commit_msg=f'[{Path(share_directory).name}][USER][ADDED]{",".join(new_users)}'
+        commit_msg=f'[{Path(share_directory).name}][USER][ADDED]{",".join(sorted(new_users))}'
         stage_and_commit(track_change_dir, userlist_txt, commit_msg)
         logging.info(commit_msg)
     else:
@@ -157,7 +157,7 @@ def track_user_removal(track_change_dir, share_directory, deleted_users):
         with open(userlist_txt, 'w') as tc_file:
             for item in current_htaccess:
                 tc_file.write(item+'\n')
-        commit_msg=f'[{Path(share_directory).name}][USER][REMOVED]{",".join(removed_htaccess)}'
+        commit_msg=f'[{Path(share_directory).name}][USER][REMOVED]{",".join(sorted(removed_htaccess))}'
         stage_and_commit(track_change_dir, userlist_txt, commit_msg)
         logging.info(commit_msg)
     else:
