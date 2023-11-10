@@ -164,13 +164,13 @@ def test_remove_one_user(single_file_share, variables):
     from nfs4_share import acl
 
     # add multiple users to the test share
-    extra_user_permissions = generate_permissions(users=variables["test_users_rm_from_share"], 
+    extra_user_permissions = generate_permissions(users=variables["multiple_new_users"], 
                                                   groups=[], managing_users=[], managing_groups=[], 
                                                   domain=variables["domain_name"], manage_permissions='rxtncy')
     before_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
     expected_acl_after_add = before_share_permissions + extra_user_permissions
 
-    add(single_file_share.directory, users=variables["test_users_rm_from_share"], domain=variables["domain_name"],
+    add(single_file_share.directory, users=variables["multiple_new_users"], domain=variables["domain_name"],
         lock=True, user_apache_directive=variables["user_directive"],
         group_apache_directive=variables["group_directive"])
     after_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
@@ -191,13 +191,13 @@ def test_remove_multiple_users(single_file_share, variables):
     from nfs4_share import acl
 
     # add multiple users to the test share
-    extra_user_permissions = generate_permissions(users=variables["test_users_rm_from_share"], 
+    extra_user_permissions = generate_permissions(users=variables["multiple_new_users"], 
                                                   groups=[], managing_users=[], managing_groups=[], 
                                                   domain=variables["domain_name"], manage_permissions='rxtncy')
     before_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
     expected_acl_after_add = before_share_permissions + extra_user_permissions
 
-    add(single_file_share.directory, users=variables["test_users_rm_from_share"], domain=variables["domain_name"],
+    add(single_file_share.directory, users=variables["multiple_new_users"], domain=variables["domain_name"],
         lock=True, user_apache_directive=variables["user_directive"],
         group_apache_directive=variables["group_directive"])
     after_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
@@ -206,7 +206,7 @@ def test_remove_multiple_users(single_file_share, variables):
     
     acl_expected_after_rm = acl.AccessControlList(set(after_share_permissions) - set(extra_user_permissions))
 
-    delete(single_file_share.directory, domain=variables["domain_name"], users=variables["test_users_rm_from_share"], lock=True)
+    delete(single_file_share.directory, domain=variables["domain_name"], users=variables["multiple_new_users"], lock=True)
     acl_after_user_rm = acl.AccessControlList.from_file(single_file_share.directory)
     assert sorted(acl_after_user_rm.entries) == sorted(acl_expected_after_rm.entries)
 
