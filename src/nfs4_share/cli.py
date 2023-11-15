@@ -11,6 +11,30 @@ from pathlib import Path
 def path_object(input):
     return Path(input)
 
+class ArgparseFormatter(argparse.HelpFormatter):
+    # use defined argument order to display usage
+    # Put positional argument before optional arguments in the usage line
+    # so usage: nfs4_share SHARE_DIR --user [USER] (and all other args)
+    # source: https://stackoverflow.com/questions/26985650/argparse-do-not-catch-positional-arguments-with-nargs/26986546#26986546
+    def _format_usage(self, usage, actions, groups, prefix):
+        if prefix is None:
+            prefix = 'usage: '
+
+        # if usage is specified, use that
+        if usage is not None:
+            usage = usage % dict(prog=self._prog)
+
+        # if no optionals or positionals are available, usage is just prog
+        elif usage is None and not actions:
+            usage = '%(prog)s' % dict(prog=self._prog)
+        elif usage is None:
+            prog = '%(prog)s' % dict(prog=self._prog)
+            # build full usage string
+            action_usage = self._format_actions_usage(actions, groups) # NEW
+            usage = ' '.join([s for s in [prog, action_usage] if s])
+            # omit the long line wrapping code
+        # prefix with 'usage:'
+        return '%s%s\n\n' % (prefix, usage)
 
 def _cli_argument_parser():
     """
@@ -26,7 +50,8 @@ def _cli_argument_parser():
     default_args = {
         "share_directory": (
             ["share_directory"],
-            {'metavar': "SHARE_DIRECTORY", 'help': "The path to the directory representing the share"}
+            {'metavar': "SHARE_DIRECTORY",
+             'help': "The path to the directory representing the share"}
         )
     }
     parser.add_argument("-v", "--verbose", action="count", default=0,
@@ -35,7 +60,8 @@ def _cli_argument_parser():
                                        description='valid subcommands')
     # Sub-parser for creating a share
     create_parser = subparsers.add_parser('create', aliases=['new'],
-                                          help='creates a share directory (help: \'create -h\')')
+                                          help='creates a share directory (help: \'create -h\')',
+                                          formatter_class=ArgparseFormatter)
     # Following enables the use of extend action; so when doing "prog -i a b -i c" gives [a, b, c] instead of [[a,b], c]
     create_parser.register('action', 'extend', ExtendAction)
     create_parser.set_defaults(func=manage.create)
@@ -45,7 +71,8 @@ def _cli_argument_parser():
 
     # Sub-parser for adding things to a share
     add_parser = subparsers.add_parser('add',
-                                       help='adds items, users or groups a share directory (help: \'add -h\')')
+                                       help='adds items, users or groups a share directory (help: \'add -h\')',
+                                       formatter_class=ArgparseFormatter)
     add_parser.set_defaults(func=manage.add)
     add_parser.register('action', 'extend', ExtendAction)
     for args in ['share_directory']:
@@ -54,7 +81,8 @@ def _cli_argument_parser():
 
     # Sub-parser for removing items from a share or for removing share completely
     delete_parser = subparsers.add_parser('delete', aliases=['rm', 'remove', 'del'],
-                                          help='deletes files from a directory or a share directory (help: \'delete -h\')')
+                                          help='deletes files from a directory or a share directory (help: \'delete -h\')',
+                                          formatter_class=ArgparseFormatter)
     delete_parser.set_defaults(func=manage.delete)
     for args in ['share_directory']:
         delete_parser.add_argument(*default_args[args][0], **default_args[args][1])

@@ -6,7 +6,6 @@ import pytest
 from os.path import join as j
 from .utils import fabricate_a_source
 
-
 def test_empty_share_removal(shares_dir, calling_prim_group, variables):
     from nfs4_share.manage import create, delete
     share = create(shares_dir.join('share'), managing_groups=[calling_prim_group],
@@ -159,3 +158,79 @@ def test_removing_file_instead_of_share(source_dir, shares_dir, calling_user, ca
         delete(j(share.directory, 'file'))
 
     assert os.path.exists(j(share.directory, 'file'))
+
+def test_remove_one_user(single_file_share, variables):
+    from nfs4_share.manage import add,delete, generate_permissions
+    from nfs4_share import acl
+
+    # add multiple users to the test share
+    extra_user_permissions = generate_permissions(users=variables["multiple_new_users"], 
+                                                  groups=[], managing_users=[], managing_groups=[], 
+                                                  domain=variables["domain_name"], manage_permissions='rxtncy')
+    before_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
+    expected_acl_after_add = before_share_permissions + extra_user_permissions
+
+    add(single_file_share.directory, users=variables["multiple_new_users"], domain=variables["domain_name"],
+        lock=True, user_apache_directive=variables["user_directive"],
+        group_apache_directive=variables["group_directive"])
+    after_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
+
+    assert sorted(after_share_permissions.entries) == sorted(expected_acl_after_add.entries)
+    
+    acl_tobe_removed = acl.AccessControlEntity('A', '', 
+                                               variables["user_to_rm_from_share"],
+                                               variables["domain_name"], 'rxtncy')
+    acl_expected_after_rm = after_share_permissions - acl.AccessControlList([acl_tobe_removed])
+
+    delete(single_file_share.directory, domain=variables["domain_name"], users=[variables["user_to_rm_from_share"]], lock=True)
+    acl_after_user_rm = acl.AccessControlList.from_file(single_file_share.directory)
+    assert sorted(acl_after_user_rm.entries) == sorted(acl_expected_after_rm.entries)
+
+def test_remove_multiple_users(single_file_share, variables):
+    from nfs4_share.manage import add,delete, generate_permissions
+    from nfs4_share import acl
+
+    # add multiple users to the test share
+    extra_user_permissions = generate_permissions(users=variables["multiple_new_users"], 
+                                                  groups=[], managing_users=[], managing_groups=[], 
+                                                  domain=variables["domain_name"], manage_permissions='rxtncy')
+    before_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
+    expected_acl_after_add = before_share_permissions + extra_user_permissions
+
+    add(single_file_share.directory, users=variables["multiple_new_users"], domain=variables["domain_name"],
+        lock=True, user_apache_directive=variables["user_directive"],
+        group_apache_directive=variables["group_directive"])
+    after_share_permissions = acl.AccessControlList.from_file(single_file_share.directory)
+
+    assert sorted(after_share_permissions.entries) == sorted(expected_acl_after_add.entries)
+    
+    acl_expected_after_rm = acl.AccessControlList(set(after_share_permissions) - set(extra_user_permissions))
+
+    delete(single_file_share.directory, domain=variables["domain_name"], users=variables["multiple_new_users"], lock=True)
+    acl_after_user_rm = acl.AccessControlList.from_file(single_file_share.directory)
+    assert sorted(acl_after_user_rm.entries) == sorted(acl_expected_after_rm.entries)
+
+def test_remove_one_item(source_dir, shares_dir, calling_prim_group, variables):
+    from nfs4_share.manage import create,delete
+    items = fabricate_a_source(source_dir, ["file","file1","file2"])
+    share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
+                   domain=variables["domain_name"],
+                   service_application_accounts=variables['service_application_accounts'])
+    
+    expected_items_after_deletion = os.listdir(share.directory)
+    expected_items_after_deletion.remove('file')
+    delete(share.directory, items=["file"])
+    items_after_deletion = os.listdir(share.directory)
+    assert sorted(items_after_deletion) == sorted(expected_items_after_deletion)
+
+def test_remove_multiple_items(source_dir, shares_dir, calling_prim_group, variables):
+    from nfs4_share.manage import create,delete
+    items = fabricate_a_source(source_dir, ["file","file1","file2"])
+    share = create(shares_dir.join('share'), items=items, managing_groups=[calling_prim_group],
+                   domain=variables["domain_name"],
+                   service_application_accounts=variables['service_application_accounts'])
+    
+    expected_items_after_deletion = list(set(os.listdir(share.directory)) - set(['file', 'file1']))
+    delete(share.directory, items=["file", "file1"])
+    items_after_deletion = os.listdir(share.directory)
+    assert sorted(items_after_deletion) == sorted(expected_items_after_deletion)

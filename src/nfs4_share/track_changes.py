@@ -83,7 +83,7 @@ def track_user_addition(track_change_dir, share_directory):
         with open(userlist_txt, 'a') as tc_file:
             for item in new_users:
                 tc_file.write(item+'\n')
-        commit_msg=f'[{Path(share_directory).name}][USER][ADDED]{",".join(new_users)}'
+        commit_msg=f'[{Path(share_directory).name}][USER][ADDED]{",".join(sorted(new_users))}'
         stage_and_commit(track_change_dir, userlist_txt, commit_msg)
         logging.info(commit_msg)
     else:
@@ -149,7 +149,7 @@ def track_user_removal(track_change_dir, share_directory, deleted_users):
         previous_htaccess=[l.strip() for l in previous_htaccess]
     
     # get a list of current user from git-tracked userlist
-    current_htaccess=[l for l in previous_htaccess if not re.search('|'.join(deleted_users), l)]
+    current_htaccess=[l for l in previous_htaccess if not re.search(rf'\b({"|".join(deleted_users)})\b', l)]
 
     # remove deleted users from git-tracked userlist
     if deleted_users:
@@ -157,7 +157,7 @@ def track_user_removal(track_change_dir, share_directory, deleted_users):
         with open(userlist_txt, 'w') as tc_file:
             for item in current_htaccess:
                 tc_file.write(item+'\n')
-        commit_msg=f'[{Path(share_directory).name}][USER][REMOVED]{",".join(removed_htaccess)}'
+        commit_msg=f'[{Path(share_directory).name}][USER][REMOVED]{",".join(sorted(removed_htaccess))}'
         stage_and_commit(track_change_dir, userlist_txt, commit_msg)
         logging.info(commit_msg)
     else:

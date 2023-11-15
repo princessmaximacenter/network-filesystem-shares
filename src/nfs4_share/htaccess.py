@@ -69,7 +69,7 @@ def remove_at(share: Share, target_users: list, target_groups: list,
         # Remove unwanted characters
         htaccess_lines = [line.strip() for line in htaccess_lines]
         # Remove users/groups
-        htaccess_lines = [line for line in htaccess_lines if not re.search('|'.join(target_groups+target_users), line)]
+        htaccess_lines = [line for line in htaccess_lines if not re.search(rf'\b({"|".join(target_groups+target_users)})\b', line)]
 
         with open(htaccess_file_path, 'w') as f:
             for line in htaccess_lines:

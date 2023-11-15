@@ -133,7 +133,7 @@ def add(share_directory, user_apache_directive="{}", group_apache_directive="{}"
     return share
 
 
-def delete(share_directory, domain,
+def delete(share_directory, domain=None,
            force=False, items=None, users=None, groups=None,track_change_dir=None, lock=False):
     """
         Deletes a share. The directory representing the share should exist.
@@ -167,6 +167,7 @@ def delete(share_directory, domain,
             track_changes.track_file_deletion(track_change_dir, share_directory,items)
 
     if users or groups:
+        assert domain, "domain cannot be left empty if trying to remove users or groups"
         # update htaccess
         logging.info(f"Will attempt to remove {','.join(groups+users)} from {share_directory}")
         htaccess.remove_at(share=share,

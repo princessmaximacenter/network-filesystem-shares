@@ -63,7 +63,7 @@ class Share:
                 self._unshare_linked_tree(e.filename)
                 self._duplicate_as_linked_tree(directory)
                 # remove source directory from new items, if they exist in the share
-                shared_items.remove(e.filename)
+                shared_items.remove(directory)
         for unhandled_item in set(items) - set(directories).union(set(files)):
             shared_items.remove(unhandled_item)
             logging.error("Did not handle input item '%s'" % unhandled_item)
@@ -152,7 +152,7 @@ class Share:
         os.makedirs(directory)
         self.permissions.set(target=directory)
 
-    def _link_files(self, source, target, shared_item_list):
+    def _link_files(self, source, target, shared_item_list=[]):
         """
         Creates a hard link between two files and outputs to log
         """

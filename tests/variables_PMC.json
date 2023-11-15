@@ -1,6 +1,8 @@
 {
   "service_application_accounts": ["fn_httpd_omics"],
   "account_someone_else" : "everwiel",
+  "user_to_rm_from_share" : "ajanse",
+  "multiple_new_users": ["ajanse", "ajanse_test"],
   "domain_name" : "researchidt.prinsesmaximacentrum.nl",
   "user_directive" : "Require ldap-user {}",
   "group_directive" : "Require ldap-group cn={},cn=groups,cn=accounts,dc=researchidt,dc=prinsesmaximacentrum,dc=nl"
